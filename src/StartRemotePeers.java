@@ -21,14 +21,14 @@ public class StartRemotePeers {
 	public Vector<RemotePeerInfo> peerInfoVector;
 	
 	public void getConfiguration() {
-		String st;
-		int i1;
+		String str;
 		peerInfoVector = new Vector<RemotePeerInfo>();
+
 		try {
 			BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
 
-			while((st = in.readLine()) != null) {
-				String[] tokens = st.split("\\s+");
+			while((str = in.readLine()) != null) {
+				String[] tokens = str.split("\\s+");
 			    peerInfoVector.addElement(new RemotePeerInfo(tokens[0], tokens[1], tokens[2]));
 			}
 			
@@ -52,13 +52,9 @@ public class StartRemotePeers {
 				RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
 				
 				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
-				
-				// *********************** IMPORTANT *************************** //
-				// If your program is JAVA, use this line.
 				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java peerProcess " + pInfo.peerId);
 			}		
 			System.out.println("Starting all remote peers has done." );
-
 		}
 		catch (Exception ex) {
 			System.out.println(ex);
