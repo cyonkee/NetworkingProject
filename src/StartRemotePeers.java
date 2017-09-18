@@ -28,8 +28,8 @@ public class StartRemotePeers {
 			BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
 
 			while((str = in.readLine()) != null) {
-				String[] tokens = str.split("\\s+");
-			    peerInfoVector.addElement(new RemotePeerInfo(tokens[0], tokens[1], tokens[2]));
+                String[] tokens = str.split("\\s+");
+                peerInfoVector.addElement(new RemotePeerInfo(tokens[0], tokens[1], tokens[2]));
 			}
 			
 			in.close();
