@@ -1,6 +1,6 @@
 /**
  * Created by cyonkee on 9/22/17.
  */
-public interface TCPState {
+public abstract class TCPState {
 
 }
