@@ -16,6 +16,7 @@ import java.util.*;
  * You must modify this program a little bit if your peer processes are written in C or C++.
  * Please look at the lines below the comment saying IMPORTANT.
  */
+
 public class StartRemotePeers {
 
 	public Vector<RemotePeerInfo> peerInfoVector;
@@ -52,7 +53,7 @@ public class StartRemotePeers {
 				RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
 				
 				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
-				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java peerProcess " + pInfo.peerId);
+				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java PeerProcess " + pInfo.peerId);
 			}		
 			System.out.println("Starting all remote peers has done." );
 		}
