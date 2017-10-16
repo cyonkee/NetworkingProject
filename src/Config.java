@@ -1,6 +1,7 @@
 /**
  * Created by cyonkee on 10/12/17.
  */
+import java.util.*;
 
 public class Config {
     private int numOfPreferredNeighbors = 0;
@@ -10,13 +11,13 @@ public class Config {
     private int fileSize = 0;
     private int pieceSize = 0;
 
-    public Config(String[] list){
-        numOfPreferredNeighbors = Integer.valueOf(list[0]);
-        unchokingInterval = Integer.valueOf(list[1]);
-        optimisticUnchokingInterval = Integer.valueOf(list[2]);
-        fileName = list[3];
-        fileSize = Integer.valueOf(list[4]);
-        pieceSize = Integer.valueOf(list[5]);
+    public Config(ArrayList list){
+        numOfPreferredNeighbors = Integer.valueOf((String) list.get(0));
+        unchokingInterval = Integer.valueOf( (String) list.get(1) );
+        optimisticUnchokingInterval = Integer.valueOf( (String) list.get(2) );
+        fileName = (String) list.get(3);
+        fileSize = Integer.valueOf( (String) list.get(4));
+        pieceSize = Integer.valueOf( (String) list.get(5));
     }
 
     public int getNumOfPreferredNeighbors() {
