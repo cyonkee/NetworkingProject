@@ -4,7 +4,7 @@
 public class ServerProtocol {
 
     public String processInput(String input) {
-        String output = "";
+        String output = input;
         return output;
     }
 }

@@ -82,18 +82,18 @@ public class PeerProcess {
     public PeersInfo getPeersInfo(){ return peersInfo; }
     public ArrayList getNeighborIDs() { return neighborIDs; }
     public HashMap getMap() { return peersInfo.getMap(); }
+    public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
 
     public static void main(String[] args){
         PeerProcess peerProcess = new PeerProcess(args[0]);
         HashMap map = peerProcess.getMap();
-        Neighbor peerInfo = (Neighbor) map.get(args[0]);
-        int countNumber = peerInfo.getCount();
+        Neighbor currentPeer = (Neighbor) map.get(args[0]);
+        int countNumber = currentPeer.getPeerCount();
 
-        //Start Listening for incoming connections
+        //Start Listening for incoming connections if not the last peer
         TCPConnection conn = new TCPConnection(peerProcess);
-
-        if(countNumber < GLOBAL_PEERSCOUNT - 1)
-            conn.startListening();
+        if(countNumber < peerProcess.getMaxCount() - 1)
+            conn.startServer();
 
         //if first peer in list then just listen
         //other peers start listening and also connect to peers below in the list
@@ -102,8 +102,8 @@ public class PeerProcess {
             while(it.hasNext()){
                 String key = (String) it.next();
                 Neighbor n = (Neighbor) map.get(key);
-                if(countNumber > n.getCount()){
-                    conn.startConnection(n);
+                if(countNumber > n.getPeerCount()){
+                    conn.startClient(n);
                 }
             }
         }

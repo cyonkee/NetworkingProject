@@ -28,8 +28,8 @@ public class ServerThread extends Thread {
             while ((inputLine = in.readLine()) != null) {
                 outputLine = lp.processInput(inputLine);
                 out.println(outputLine);
-                if (outputLine.equals("Bye"))
-                    break;
+//                if (outputLine.equals("Bye"))
+//                    break;
             }
             socket.close();
         } catch (IOException e) {

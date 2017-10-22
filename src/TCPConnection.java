@@ -14,7 +14,7 @@ public class TCPConnection {
         map = peer.getMap();
     }
 
-    public void startListening() {
+    public void startServer() {
         Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
         boolean listening = true;
         int port = thisPeer.getPort();
@@ -30,7 +30,7 @@ public class TCPConnection {
         }
     }
     
-    public void startConnection(Neighbor n){
+    public void startClient(Neighbor n){
         String hostName = n.getHostname();
         boolean connected = true;
         int port = n.getPort();
