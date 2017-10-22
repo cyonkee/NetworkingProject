@@ -4,6 +4,7 @@
 
 import java.io.*;
 import java.util.*;
+import java.lang.*;
 
 /*
 This class is where the program begins by constructing a peer process.
@@ -29,7 +30,6 @@ public class PeerProcess {
         this.peerID = peerID;
         configurePeer();
         parsePeersFile();
-        TCPConnection conn = new TCPConnection(this);
     }
 
     private void configurePeer(){
@@ -80,11 +80,32 @@ public class PeerProcess {
     public String getPeerID(){ return peerID; }
     public Config getAttributes(){ return attributes; }
     public PeersInfo getPeersInfo(){ return peersInfo; }
-    public ArrayList getNeighborIDs() {
-        return neighborIDs;
-    }
+    public ArrayList getNeighborIDs() { return neighborIDs; }
+    public HashMap getMap() { return peersInfo.getMap(); }
 
     public static void main(String[] args){
         PeerProcess peerProcess = new PeerProcess(args[0]);
+        HashMap map = peerProcess.getMap();
+        Neighbor peerInfo = (Neighbor) map.get(args[0]);
+        int countNumber = peerInfo.getCount();
+
+        //Start Listening for incoming connections
+        TCPConnection conn = new TCPConnection(peerProcess);
+
+        if(countNumber < GLOBAL_PEERSCOUNT - 1)
+            conn.startListening();
+
+        //if first peer in list then just listen
+        //other peers start listening and also connect to peers below in the list
+        if(countNumber > 0){
+            Iterator it = map.keySet().iterator();
+            while(it.hasNext()){
+                String key = (String) it.next();
+                Neighbor n = (Neighbor) map.get(key);
+                if(countNumber > n.getCount()){
+                    conn.startConnection(n);
+                }
+            }
+        }
     }
 }
