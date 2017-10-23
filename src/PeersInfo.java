@@ -8,6 +8,7 @@ import java.util.Map;
  */
 public class PeersInfo {
     HashMap map = new HashMap();
+    static int MAXPEERSCOUNT = 0;
 
     public PeersInfo(ArrayList list){
         fillHashMap(list);
@@ -18,13 +19,13 @@ public class PeersInfo {
         Iterator it = list.iterator();
         for(;it.hasNext();it.next()){
             String[] extractedArray = (String[]) list.get(i);
-            Neighbor neighbor = new Neighbor(extractedArray[1],extractedArray[2],extractedArray[3]);
+            Neighbor neighbor = new Neighbor(extractedArray[1],extractedArray[2],extractedArray[3],i);
             map.put(extractedArray[0], neighbor);
             i++;
+            MAXPEERSCOUNT++;
         }
     }
 
-    public HashMap getMap(){
-        return map;
-    }
+    public HashMap getMap(){ return map; }
+    public int getMaxPeerscount(){ return MAXPEERSCOUNT; }
 }
