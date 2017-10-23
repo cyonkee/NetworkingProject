@@ -22,20 +22,20 @@ public class Client {
     }
 
     //@Override
-    public void run() {
+    public void startConnection(int serverPort, PeerProcess peer) {
         try{
             String fromServer;
             String fromUser;
 
-            fromUser = "Hello Server";
-            System.out.println("Client: " + fromUser);
+            fromUser = "Hello Server at port " + serverPort;
+            System.out.println(fromUser);
             out.println(fromUser);
 
             fromServer = in.readLine();
             System.out.println("Server: " + fromServer);
 
-            fromUser = "Bye Server";
-            System.out.println("Client: " + fromUser);
+            fromUser = "I am Client " + peer.getPeerID();
+            System.out.println(fromUser);
             out.println(fromUser);
 //            while ((fromServer = in.readLine()) != null) {
 //                System.out.println("Server: " + fromServer);

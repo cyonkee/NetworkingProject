@@ -85,9 +85,10 @@ public class PeerProcess {
     public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
 
     public static void main(String[] args){
-        PeerProcess peerProcess = new PeerProcess(args[0]);
+        String currentPeerID = args[0];
+        PeerProcess peerProcess = new PeerProcess(currentPeerID);
         HashMap map = peerProcess.getMap();
-        Neighbor currentPeer = (Neighbor) map.get(args[0]);
+        Neighbor currentPeer = (Neighbor) map.get(currentPeerID);
         int countNumber = currentPeer.getPeerCount();
 
         TCPConnection conn = new TCPConnection(peerProcess);

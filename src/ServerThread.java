@@ -29,7 +29,7 @@ public class ServerThread extends Thread {
             System.out.println("Client: " + inputLine);
 
             outputLine = "Hello Client";
-            System.out.println("Server: " + outputLine);
+            System.out.println(outputLine);
             out.println(outputLine);
 
             inputLine = in.readLine();
@@ -41,7 +41,7 @@ public class ServerThread extends Thread {
 //                outputLine = lp.processInput(inputLine);
 //                out.println(outputLine);
 //            }
-            socket.close();
+            //socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
