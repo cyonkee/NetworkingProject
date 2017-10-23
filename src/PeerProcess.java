@@ -31,7 +31,6 @@ public class PeerProcess {
         parsePeersFile();
         TCPConnection conn = new TCPConnection(this);
         setBitfields();
-        hello();
     }
 
     private void configurePeer(){
@@ -78,23 +77,15 @@ public class PeerProcess {
             list.add(arr);
         }
     }
-    private void hello() {
-        BitSet bitfield = new BitSet();
-        //bitfield.set(0, 10, false);
-        //bitfield.set(0, 10, true);
-        //System.out.println(bitfield.toString());
-    }
+
     private void setBitfields(){
-        int i=0;
-        Iterator it = peersInfo.getMap().keySet().iterator();
-        for(;it.hasNext();it.next()) {
-            Neighbor n = (Neighbor) peersInfo.getMap().get(it);
+        ArrayList neighborids = getNeighborIDs();
+        for (int i=0; i<getMaxCount(); i++){
+            Neighbor n = (Neighbor) peersInfo.getMap().get(neighborids.get(i));
             BitSet bitfield = new BitSet();
-            bitfield.set(0, 9, false);
             if (n.getHasFile() == true) {
-                bitfield.set(0, 9, true);
+                bitfield.set(0, attributes.getFileSize(), true);
             }
-            System.out.println(bitfield.toString());
             n.setBitfield(bitfield);
         }
     }
