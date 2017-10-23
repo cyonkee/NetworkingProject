@@ -25,11 +25,14 @@ public class PeerProcess {
     private PeersInfo peersInfo;
     private ArrayList neighborIDs = new ArrayList();
 
+
     public PeerProcess(String peerID){
         this.peerID = peerID;
         configurePeer();
         parsePeersFile();
         TCPConnection conn = new TCPConnection(this);
+        setBitfields();
+        hello();
     }
 
     private void configurePeer(){
@@ -76,6 +79,26 @@ public class PeerProcess {
             list.add(arr);
         }
     }
+    private void hello() {
+        BitSet bitfield = new BitSet();
+        //bitfield.set(0, 10, false);
+        //bitfield.set(0, 10, true);
+        //System.out.println(bitfield.toString());
+    }
+    private void setBitfields(){
+        int i=0;
+        Iterator it = peersInfo.getMap().keySet().iterator();
+        for(;it.hasNext();it.next()) {
+            Neighbor n = (Neighbor) peersInfo.getMap().get(it);
+            BitSet bitfield = new BitSet();
+            bitfield.set(0, 9, false);
+            if (n.getHasFile() == true) {
+                bitfield.set(0, 9, true);
+            }
+            System.out.println(bitfield.toString());
+            n.setBitfield(bitfield);
+        }
+    }
 
     public String getPeerID(){ return peerID; }
     public Config getAttributes(){ return attributes; }
@@ -83,6 +106,7 @@ public class PeerProcess {
     public ArrayList getNeighborIDs() {
         return neighborIDs;
     }
+
 
     public static void main(String[] args){
         PeerProcess peerProcess = new PeerProcess(args[0]);

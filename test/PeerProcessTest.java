@@ -2,6 +2,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.security.auth.login.Configuration;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -82,5 +83,20 @@ public class PeerProcessTest {
         Assertions.assertEquals("lin114-05.cise.ufl.edu", n6.getHostname());
         Assertions.assertEquals(6008, n6.getPort());
         Assertions.assertFalse(n6.getHasFile());
+    }
+
+    @Test
+    public void testBitfields() {
+        PeerProcess p = new PeerProcess("1001");
+        PeersInfo peersinfo = p.getPeersInfo();
+        HashMap map = peersinfo.getMap();
+
+        Neighbor n1 = (Neighbor) map.get("1001");
+        Neighbor n2 = (Neighbor) map.get("1002");
+        Neighbor n3 = (Neighbor) map.get("1003");
+        BitSet b = n1.getBitfield();
+        //System.out.println(n1.getBitfield().toString());
+        //Assertions.assertEquals("lin114-05.cise.ufl.edu", n1.getBitfield());
+
     }
 }
