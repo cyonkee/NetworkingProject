@@ -3,7 +3,6 @@
  */
 import java.net.*;
 import java.io.*;
-import java.util.*;
 import java.lang.*;
 
 public class ServerThread extends Thread {
@@ -11,6 +10,7 @@ public class ServerThread extends Thread {
     private boolean open = true;
     private PrintWriter out;
     private BufferedReader in;
+    private boolean isClient = false;
 
     public ServerThread(Socket socket) throws IOException {
         super("ServerThread");
@@ -22,18 +22,18 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         try{
-            String inputLine, outputLine;
-            ServerProtocol lp = new ServerProtocol();
+            HandshakeProtocol handshake = new HandshakeProtocol(isClient, out, in);
 
-            inputLine = in.readLine();
-            System.out.println("Client: " + inputLine);
-
-            outputLine = "Hello Client";
-            System.out.println(outputLine);
-            out.println(outputLine);
-
-            inputLine = in.readLine();
-            System.out.println("Client: " + inputLine);
+//            String inputLine, outputLine;
+//            inputLine = in.readLine();
+//            System.out.println("Client: " + inputLine);
+//
+//            outputLine = "Hello Client";
+//            System.out.println(outputLine);
+//            out.println(outputLine);
+//
+//            inputLine = in.readLine();
+//            System.out.println("Client: " + inputLine);
 
 //            while ((inputLine = in.readLine()) != null) {
 //                System.out.println("Client: " + inputLine);

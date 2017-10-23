@@ -12,6 +12,7 @@ public class Client {
     private PrintWriter out;
     private BufferedReader in;
     private BufferedReader stdIn;
+    private boolean isClient = true;
 
     public Client(Socket socket) throws IOException{
         //super("Client");
@@ -24,19 +25,20 @@ public class Client {
     //@Override
     public void startConnection(int serverPort, PeerProcess peer) {
         try{
-            String fromServer;
-            String fromUser;
+            HandshakeProtocol handshake = new HandshakeProtocol(isClient,out,in);
 
-            fromUser = "Hello Server at port " + serverPort;
-            System.out.println(fromUser);
-            out.println(fromUser);
-
-            fromServer = in.readLine();
-            System.out.println("Server: " + fromServer);
-
-            fromUser = "I am Client " + peer.getPeerID();
-            System.out.println(fromUser);
-            out.println(fromUser);
+//            String fromServer;
+//            String fromUser;
+//            fromUser = "Hello Server at port " + serverPort;
+//            System.out.println(fromUser);
+//            out.println(fromUser);
+//
+//            fromServer = in.readLine();
+//            System.out.println("Server: " + fromServer);
+//
+//            fromUser = "I am Client " + peer.getPeerID();
+//            System.out.println(fromUser);
+//            out.println(fromUser);
 //            while ((fromServer = in.readLine()) != null) {
 //                System.out.println("Server: " + fromServer);
 //
