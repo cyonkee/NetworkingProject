@@ -17,7 +17,7 @@ An instance of PeersInfo will create a hash map with the individual peerIDs as t
 The values associated with the keys are instances of the Neighbor class which holds the
 hostname, port, and boolean hasFile for each neighbor peer (also contains current peer).
 
-Third, the current peer instance initializes a TCPconnection.
+Third, the TCP connections are started.
  */
 
 public class PeerProcess {
@@ -90,22 +90,23 @@ public class PeerProcess {
         Neighbor currentPeer = (Neighbor) map.get(args[0]);
         int countNumber = currentPeer.getPeerCount();
 
-        //Start Listening for incoming connections if not the last peer
         TCPConnection conn = new TCPConnection(peerProcess);
-        if(countNumber < peerProcess.getMaxCount() - 1)
-            conn.startServer();
 
         //if first peer in list then just listen
         //other peers start listening and also connect to peers below in the list
         if(countNumber > 0){
-            Iterator it = map.keySet().iterator();
+            Iterator it = peerProcess.getNeighborIDs().iterator();
             while(it.hasNext()){
-                String key = (String) it.next();
-                Neighbor n = (Neighbor) map.get(key);
+                String id = (String) it.next();
+                Neighbor n = (Neighbor) map.get(id);
                 if(countNumber > n.getPeerCount()){
                     conn.startClient(n);
                 }
             }
         }
+
+        //Start Listening for incoming connections if not the last peer
+        if(countNumber < peerProcess.getMaxCount() - 1)
+            conn.startServer();
     }
 }

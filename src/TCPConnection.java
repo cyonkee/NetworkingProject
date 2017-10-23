@@ -21,6 +21,7 @@ public class TCPConnection {
 
         //LISTENER SOCKET
         try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server " + peer.getPeerID() + " listening on port " + port);
             while (listening) {
                 new ServerThread(serverSocket.accept()).start();
             }
@@ -38,9 +39,8 @@ public class TCPConnection {
         //SENDER SOCKET
         try (Socket clientSocket = new Socket(hostName, port))
         {
-            while (connected) {
-                new ClientThread(clientSocket).start();
-            }
+            Client client = new Client(clientSocket);
+            client.run();
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);
