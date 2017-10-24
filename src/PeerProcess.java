@@ -29,7 +29,6 @@ public class PeerProcess {
         this.peerID = peerID;
         configurePeer();
         parsePeersFile();
-        TCPConnection conn = new TCPConnection(this);
         setBitfields();
     }
 
