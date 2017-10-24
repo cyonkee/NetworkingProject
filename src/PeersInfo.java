@@ -6,6 +6,9 @@ import java.util.Map;
 /**
  * Created by cyonkee on 10/14/17.
  */
+
+import java.util.*;
+
 public class PeersInfo {
     HashMap map = new HashMap();
     static int MAXPEERSCOUNT = 0;

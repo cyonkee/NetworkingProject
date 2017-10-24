@@ -4,7 +4,6 @@
 
 import java.io.*;
 import java.util.*;
-import java.lang.*;
 
 /*
 This class is where the program begins by constructing a peer process.
@@ -17,7 +16,7 @@ An instance of PeersInfo will create a hash map with the individual peerIDs as t
 The values associated with the keys are instances of the Neighbor class which holds the
 hostname, port, and boolean hasFile for each neighbor peer (also contains current peer).
 
-Third, the TCP connections are started.
+Third, the current peer instance initializes a TCPconnection.
  */
 
 public class PeerProcess {
@@ -30,6 +29,8 @@ public class PeerProcess {
         this.peerID = peerID;
         configurePeer();
         parsePeersFile();
+        TCPConnection conn = new TCPConnection(this);
+        setBitfields();
     }
 
     private void configurePeer(){
@@ -74,6 +75,18 @@ public class PeerProcess {
             neighborIDs.add(tokens[0]);
             String[] arr = {tokens[0], tokens[1], tokens[2], tokens[3]};
             list.add(arr);
+        }
+    }
+
+    private void setBitfields(){
+        ArrayList neighborids = getNeighborIDs();
+        for (int i=0; i<getMaxCount(); i++){
+            Neighbor n = (Neighbor) peersInfo.getMap().get(neighborids.get(i));
+            BitSet bitfield = new BitSet();
+            if (n.getHasFile() == true) {
+                bitfield.set(0, attributes.getFileSize(), true);
+            }
+            n.setBitfield(bitfield);
         }
     }
 
