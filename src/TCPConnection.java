@@ -23,7 +23,7 @@ public class TCPConnection {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server " + peer.getPeerID() + " listening on port " + port);
             while (listening) {
-                new ServerThread(serverSocket.accept()).start();
+                new ServerThread(serverSocket.accept(),peer).start();
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + port);

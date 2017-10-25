@@ -3,37 +3,39 @@
  */
 import java.net.*;
 import java.io.*;
-import java.util.*;
 import java.lang.*;
 
 public class ServerThread extends Thread {
     private Socket socket = null;
-    private boolean open = true;
-    private PrintWriter out;
-    private BufferedReader in;
+    private ObjectInputStream in;	//stream read from the socket
+    private ObjectOutputStream out;    //stream write to the socket
+    private boolean isClient = false;
+    private PeerProcess peer;
 
-    public ServerThread(Socket socket) throws IOException {
+    public ServerThread(Socket socket, PeerProcess peer) throws IOException {
         super("ServerThread");
         this.socket = socket;
-        out = new PrintWriter(socket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.peer = peer;
     }
 
     @Override
     public void run() {
         try{
-            String inputLine, outputLine;
-            ServerProtocol lp = new ServerProtocol();
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(socket.getInputStream());
+            HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
 
-            inputLine = in.readLine();
-            System.out.println("Client: " + inputLine);
-
-            outputLine = "Hello Client";
-            System.out.println(outputLine);
-            out.println(outputLine);
-
-            inputLine = in.readLine();
-            System.out.println("Client: " + inputLine);
+//            String inputLine, outputLine;
+//            inputLine = in.readLine();
+//            System.out.println("Client: " + inputLine);
+//
+//            outputLine = "Hello Client";
+//            System.out.println(outputLine);
+//            out.println(outputLine);
+//
+//            inputLine = in.readLine();
+//            System.out.println("Client: " + inputLine);
 
 //            while ((inputLine = in.readLine()) != null) {
 //                System.out.println("Client: " + inputLine);
@@ -41,8 +43,11 @@ public class ServerThread extends Thread {
 //                outputLine = lp.processInput(inputLine);
 //                out.println(outputLine);
 //            }
+
             //socket.close();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

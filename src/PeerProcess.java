@@ -29,7 +29,6 @@ public class PeerProcess {
         this.peerID = peerID;
         configurePeer();
         parsePeersFile();
-        TCPConnection conn = new TCPConnection(this);
         setBitfields();
     }
 
@@ -100,6 +99,7 @@ public class PeerProcess {
     public static void main(String[] args){
         String currentPeerID = args[0];
         PeerProcess peerProcess = new PeerProcess(currentPeerID);
+
         HashMap map = peerProcess.getMap();
         Neighbor currentPeer = (Neighbor) map.get(currentPeerID);
         int countNumber = currentPeer.getPeerCount();
