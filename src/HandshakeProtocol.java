@@ -33,18 +33,31 @@ public class HandshakeProtocol {
     }
 
     private void sendHandshakeMessage() throws IOException {
-        String output = "";
-        output += "P2PFILESHARINGPROJ";
-        BitSet bitfield = new BitSet(10);
-        output += bitfield.toString();
-        output += peerID;
-        out.writeObject(output);
+        byte[] handshakeMessage = new byte[32];
+        String header = "P2PFILESHARINGPROJ";
+        BitSet bitfield = new BitSet(80);
+        byte[] headerBytes = header.getBytes();
+        byte[] bitfieldBytes = Arrays.copyOf(bitfield.toByteArray(),10);
+        byte[] peerIdBytes = peerID.getBytes();
+
+        for(int i=0; i < 18; i++)
+            handshakeMessage[i] = headerBytes[i];
+
+        for(int i=0; i < 10; i++)
+            handshakeMessage[i+18] = bitfieldBytes[i];
+
+        for(int i=0; i < 4; i++)
+            handshakeMessage[i+28] = peerIdBytes[i];
+
+        out.write(handshakeMessage);
+        out.flush();
     }
 
     private void receiveHandshakeMessage() throws IOException, ClassNotFoundException {
-        String input = "";
-        byte[] buffer = new byte[32];
-        input += (String) in.readObject();
-        System.out.println(input);
+        byte[] input = new byte[32];
+        in.read(input,0,32);
+
+        for(int i=0; i < input.length; i++)
+            System.out.println(Byte.toString(input[i]));
     }
 }
