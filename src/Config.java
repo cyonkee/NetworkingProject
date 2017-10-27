@@ -3,6 +3,11 @@
  */
 import java.util.*;
 
+
+/*
+This is the object that will hold the info obtained from
+parsing the common.cfg file.
+ */
 public class Config {
     private int numOfPreferredNeighbors = 0;
     private int unchokingInterval = 0;

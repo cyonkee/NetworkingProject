@@ -32,6 +32,7 @@ public class HandshakeProtocol {
         sendHandshakeMessage();
     }
 
+    //Create 32 byte handshake message and send
     private void sendHandshakeMessage() throws IOException {
         byte[] handshakeMessage = new byte[32];
         String header = "P2PFILESHARINGPROJ";
@@ -50,7 +51,7 @@ public class HandshakeProtocol {
             handshakeMessage[i+28] = peerIdBytes[i];
 
         out.write(handshakeMessage);
-        out.flush();
+        out.flush(); //must flush each time a message is written to stream
     }
 
     private void receiveHandshakeMessage() throws IOException, ClassNotFoundException {

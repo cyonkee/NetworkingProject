@@ -1,14 +1,13 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-
 /**
  * Created by cyonkee on 10/14/17.
  */
 
-import java.util.*;
-
+/*
+This class holds the hashmap which will contain the Neighbor objects.
+ */
 public class PeersInfo {
     HashMap map = new HashMap();
     static int MAXPEERSCOUNT = 0;

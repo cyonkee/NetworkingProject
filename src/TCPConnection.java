@@ -5,6 +5,10 @@ import java.util.*;
 /**
  * Created by cyonkee on 10/15/17.
  */
+
+/*
+
+ */
 public class TCPConnection {
     private PeerProcess peer;
     private HashMap map;
@@ -20,6 +24,8 @@ public class TCPConnection {
         int port = thisPeer.getPort();
 
         //SERVER SOCKET
+        //keeps listening for new Client connections until the socket is closed
+        //Creates ServerThread for each new connection
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server " + peer.getPeerID() + " listening on port " + port);
             while (listening) {
@@ -37,6 +43,7 @@ public class TCPConnection {
         int port = n.getPort();
 
         //CLIENT SOCKET
+        //Initiates connection to a server
         try (Socket clientSocket = new Socket(hostName, port))
         {
             Client client = new Client(clientSocket);
