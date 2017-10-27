@@ -16,7 +16,9 @@ An instance of PeersInfo will create a hash map with the individual peerIDs as t
 The values associated with the keys are instances of the Neighbor class which holds the
 hostname, port, and boolean hasFile for each neighbor peer (also contains current peer).
 
-Third, the current peer instance initializes a TCPconnection.
+Third, after the files are parsed then the bitfields for each Neighbor are set by
+accessing each peer through the hashmap and checking the boolean hasFile. Also, the
+size of the file is attained from the Config attributes object.
  */
 
 public class PeerProcess {
@@ -97,13 +99,16 @@ public class PeerProcess {
     public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
 
     public static void main(String[] args){
+        //Start the PeerProcess and parse the files and set bitfields.
         String currentPeerID = args[0];
         PeerProcess peerProcess = new PeerProcess(currentPeerID);
 
+        //Get info from the peer
         HashMap map = peerProcess.getMap();
         Neighbor currentPeer = (Neighbor) map.get(currentPeerID);
         int countNumber = currentPeer.getPeerCount();
 
+        //Initialize a TCPConnection
         TCPConnection conn = new TCPConnection(peerProcess);
 
         //if first peer in list then just listen

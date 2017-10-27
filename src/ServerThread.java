@@ -5,6 +5,9 @@ import java.net.*;
 import java.io.*;
 import java.lang.*;
 
+/*
+Using an ObjectInputStream and ObjectOutputStream for transferring messages.
+ */
 public class ServerThread extends Thread {
     private Socket socket = null;
     private ObjectInputStream in;	//stream read from the socket
@@ -18,6 +21,8 @@ public class ServerThread extends Thread {
         this.peer = peer;
     }
 
+    //run() method is called on when .start() is
+    //invoked (in TCPConnection class startServer() method) to start the thread.
     @Override
     public void run() {
         try{

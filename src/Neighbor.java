@@ -4,6 +4,10 @@
 
 import java.util.*;
 
+/*
+This is the object that holds info about each peer from
+parsing the PeersInfo.cfg.
+ */
 public class Neighbor {
     private String hostname;
     private int port;
@@ -21,6 +25,7 @@ public class Neighbor {
     public void setBitfield(BitSet bitfield) {
         this.bitfield = bitfield;
     }
+
     public String getHostname(){ return hostname; }
 
     public int getPort() {

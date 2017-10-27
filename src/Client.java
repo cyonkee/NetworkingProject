@@ -16,7 +16,6 @@ public class Client {
         this.socket = socket;
     }
 
-    //@Override
     public void startConnection(int serverPort, PeerProcess peer) {
         try{
             out = new ObjectOutputStream(socket.getOutputStream());
