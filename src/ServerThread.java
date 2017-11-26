@@ -4,6 +4,8 @@
 import java.net.*;
 import java.io.*;
 import java.lang.*;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /*
 Using an ObjectInputStream and ObjectOutputStream for transferring messages.
@@ -29,7 +31,17 @@ public class ServerThread extends Thread {
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
+
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
+            String neighborID = handshake.getNeighborID();
+
+            HashMap map = peer.getMap();
+            Neighbor n = (Neighbor) map.get(neighborID);
+            MessageProtocol m = new MessageProtocol(isClient,neighborID,in,out);
+            n.setConnection(m);
+
+            //Testing connections
+            System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
 
 //            String inputLine, outputLine;
 //            inputLine = in.readLine();

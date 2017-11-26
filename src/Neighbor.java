@@ -14,6 +14,7 @@ public class Neighbor {
     private boolean hasFile;
     private BitSet bitfield;
     private int peerCount;
+    private MessageProtocol m;
 
     public Neighbor(String hostname, String port, String hasFile, int peerCount){
         this.hostname = hostname;
@@ -21,6 +22,8 @@ public class Neighbor {
         this.hasFile = hasFile.equals("1") ? true : false;
         this.peerCount = peerCount;
     }
+
+    public void setConnection(MessageProtocol m){ this.m = m; }
 
     public void setBitfield(BitSet bitfield) {
         this.bitfield = bitfield;
@@ -43,4 +46,6 @@ public class Neighbor {
     public int getPeerCount() {
         return peerCount;
     }
+
+    public MessageProtocol getConnection(){ return m; }
 }

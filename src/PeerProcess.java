@@ -112,7 +112,7 @@ public class PeerProcess {
         TCPConnection conn = new TCPConnection(peerProcess);
 
         //if first peer in list then just listen
-        //other peers start listening and also connect to peers below in the list
+        //other peers connect to peers below in the list
         if(countNumber > 0){
             Iterator it = peerProcess.getNeighborIDs().iterator();
             while(it.hasNext()){
