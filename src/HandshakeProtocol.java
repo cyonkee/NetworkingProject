@@ -60,5 +60,8 @@ public class HandshakeProtocol {
 
         for(int i=0; i < input.length; i++)
             System.out.println(Byte.toString(input[i]));
+
+        String s = new String(input);
+        System.out.println(s);
     }
 }

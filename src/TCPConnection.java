@@ -39,7 +39,6 @@ public class TCPConnection {
     
     public void startClient(Neighbor n){
         String hostName = n.getHostname();
-        boolean connected = true;
         int port = n.getPort();
 
         //CLIENT SOCKET
