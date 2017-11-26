@@ -23,6 +23,15 @@ public class Client {
             in = new ObjectInputStream(socket.getInputStream());
 
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
+            String neighborID = handshake.getNeighborID();
+
+            HashMap map = peer.getMap();
+            Neighbor n = (Neighbor) map.get(neighborID);
+            MessageProtocol m = new MessageProtocol(isClient,neighborID,in,out);
+            n.setConnection(m);
+
+            //Testing connections
+            System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
 
 //            String fromServer;
 //            String fromUser;

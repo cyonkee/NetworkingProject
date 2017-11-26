@@ -7,6 +7,7 @@ import java.util.*;
 public class HandshakeProtocol {
     private boolean isClient;
     private String peerID;
+    private String neighborID;
     private ObjectInputStream in;	//stream read from the socket
     private ObjectOutputStream out;    //stream write to the socket
 
@@ -58,10 +59,18 @@ public class HandshakeProtocol {
         byte[] input = new byte[32];
         in.read(input,0,32);
 
-        for(int i=0; i < input.length; i++)
-            System.out.println(Byte.toString(input[i]));
+        byte[] neighbor = new byte[4];
+        for(int i=0; i<4; i++){
+            neighbor[i] = input[i+28];
+        }
 
         String s = new String(input);
         System.out.println(s);
+
+        String neighborID = new String(neighbor);
+        setNeighborID(neighborID);
     }
+
+    public void setNeighborID(String neighborID){ this.neighborID = neighborID; }
+    public String getNeighborID(){ return neighborID; }
 }

@@ -6,20 +6,20 @@ import java.util.*;
  */
 public class MessageProtocol {
     private boolean isClient;
-    private String peerID;
+    private String neighborID;
     private ObjectInputStream in;	//stream read from the socket
     private ObjectOutputStream out;    //stream write to the socket
 
-    public MessageProtocol(boolean isClient, int type, String peerID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    public MessageProtocol(boolean isClient, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
-        this.peerID = peerID;
+        this.neighborID = neighborID;
         this.out = out;
         this.in = in;
 
-        if(isClient)
-            doClientMessage(type);
-        else
-            doServerMessage(type);
+//        if(isClient)
+//            doClientMessage(type);
+//        else
+//            doServerMessage(type);
     }
 
     private void doClientMessage(int type) throws IOException, ClassNotFoundException {
@@ -33,10 +33,10 @@ public class MessageProtocol {
     }
 
     //Create 32 byte message and send
-    private void sendMessage(int type) throws IOException {
+    public void sendMessage(int type) throws IOException {
         byte[] newMessage = null;
 
-        byte[] peerIdBytes = peerID.getBytes();
+        byte[] neighborIdBytes = neighborID.getBytes();
         int i;
         switch (type) {
             case 0:
@@ -66,4 +66,7 @@ public class MessageProtocol {
     private void receiveMessage() throws IOException, ClassNotFoundException {
 
     }
+
+    public boolean getIsClient(){ return isClient; }
+    public String getNeighborID(){ return neighborID; }
 }
