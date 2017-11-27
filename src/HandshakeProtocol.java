@@ -42,6 +42,11 @@ public class HandshakeProtocol {
         byte[] bitfieldBytes = Arrays.copyOf(bitfield.toByteArray(),10);
         byte[] peerIdBytes = peerID.getBytes();
 
+        for(int i=0; i<10; i++){
+            if(bitfieldBytes[i] == 0)
+                bitfieldBytes[i] = (byte) '0';
+        }
+
         for(int i=0; i < 18; i++)
             handshakeMessage[i] = headerBytes[i];
 

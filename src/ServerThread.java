@@ -1,11 +1,11 @@
 /**
  * Created by cyonkee on 10/22/17.
  */
-import java.net.*;
-import java.io.*;
-import java.lang.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /*
 Using an ObjectInputStream and ObjectOutputStream for transferring messages.
@@ -37,29 +37,13 @@ public class ServerThread extends Thread {
 
             HashMap map = peer.getMap();
             Neighbor n = (Neighbor) map.get(neighborID);
-            MessageProtocol m = new MessageProtocol(isClient,neighborID,in,out);
+            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
             n.setConnection(m);
 
             //Testing connections
             System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
 
-//            String inputLine, outputLine;
-//            inputLine = in.readLine();
-//            System.out.println("Client: " + inputLine);
-//
-//            outputLine = "Hello Client";
-//            System.out.println(outputLine);
-//            out.println(outputLine);
-//
-//            inputLine = in.readLine();
-//            System.out.println("Client: " + inputLine);
-
-//            while ((inputLine = in.readLine()) != null) {
-//                System.out.println("Client: " + inputLine);
-//
-//                outputLine = lp.processInput(inputLine);
-//                out.println(outputLine);
-//            }
+            m.doServerMessage();
 
             //socket.close();
         } catch (IOException e) {

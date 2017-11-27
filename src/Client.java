@@ -16,7 +16,7 @@ public class Client {
         this.socket = socket;
     }
 
-    public void startConnection(int serverPort, PeerProcess peer) {
+    public void startConnection(PeerProcess peer) {
         try{
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
@@ -33,27 +33,8 @@ public class Client {
             //Testing connections
             System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
 
-//            String fromServer;
-//            String fromUser;
-//            fromUser = "Hello Server at port " + serverPort;
-//            System.out.println(fromUser);
-//            out.println(fromUser);
-//
-//            fromServer = in.readLine();
-//            System.out.println("Server: " + fromServer);
-//
-//            fromUser = "I am Client " + peer.getPeerID();
-//            System.out.println(fromUser);
-//            out.println(fromUser);
-//            while ((fromServer = in.readLine()) != null) {
-//                System.out.println("Server: " + fromServer);
-//
-//                fromUser = stdIn.readLine();
-//                if (fromUser != null) {
-//                    System.out.println("Client: " + fromUser);
-//                    out.println(fromUser);
-//                }
-//            }
+            m.doClientMessage();
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
