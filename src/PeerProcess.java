@@ -81,11 +81,12 @@ public class PeerProcess {
 
     private void setBitfields(){
         ArrayList neighborids = getNeighborIDs();
+        int numOfPieces = attributes.getFileSize() / attributes.getPieceSize();
         for (int i=0; i<getMaxCount(); i++){
             Neighbor n = (Neighbor) peersInfo.getMap().get(neighborids.get(i));
-            BitSet bitfield = new BitSet();
+            BitSet bitfield = new BitSet(numOfPieces);
             if (n.getHasFile() == true) {
-                bitfield.set(0, attributes.getFileSize(), true);
+                bitfield.set(0, numOfPieces, true);
             }
             n.setBitfield(bitfield);
         }

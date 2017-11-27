@@ -46,7 +46,7 @@ public class TCPConnection {
         try (Socket clientSocket = new Socket(hostName, port))
         {
             Client client = new Client(clientSocket);
-            client.startConnection(n.getPort(), peer);
+            client.startConnection(peer);
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);
