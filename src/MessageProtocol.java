@@ -59,13 +59,14 @@ public class MessageProtocol {
         int offset = pieceIndex * pieceSize;
 
         //get piece of file
-        RandomAccessFile raf = new RandomAccessFile(filename,"r");
+        RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + filename,"r");
         raf.seek(offset);
         byte[] pieceOfFile = new byte[pieceSize];
         raf.readFully(pieceOfFile);
+        raf.close();
 
         //get msg values
-        byte[] output = new byte[pieceSize + 5];
+        byte[] output = new byte[pieceSize + 5 + 4];
         String lengthMsg = Integer.toString(pieceSize + 1);
         lengthMsg = padLeft(lengthMsg,4);
         String type = "7";
@@ -79,9 +80,12 @@ public class MessageProtocol {
         //msg type
         output[4] = typeBytes[0];
 
-        //msg payload (piece being sent)
+        //msg payload (piece index and piece being sent)
+        for(int i=0; i<4; i++)
+            output[i+5] = payload[i];
+
         for(int i=0; i<pieceSize; i++)
-            output[i+5] = pieceOfFile[i];
+            output[i+9] = pieceOfFile[i];
 
         //test
         String s = new String(output);
@@ -164,11 +168,33 @@ public class MessageProtocol {
             case "7":
                 //received piece, so update bitfield and file, send "have" to peers
                 //updateBitfield(payload);
-                //updateFile(payload);
+                updateFile(payload);
                 sendMessage(4, payload);
                 break;
         }
 
+    }
+
+    private void updateFile(byte[] payload) throws IOException {
+        //get piece index
+        byte[] pieceIndex = new byte[4];
+        for(int i=0; i<4; i++)
+            pieceIndex[i] = payload[i];
+
+        //get offset
+        String index = new String(pieceIndex);
+        int piece = Integer.parseInt(index);
+        int offset = piece * pieceSize;
+
+        //get bytes of file
+        byte[] filepiece = new byte[payload.length - 4];
+        for(int i=0; i<payload.length - 4; i++)
+            filepiece[i] = payload[i+4];
+
+        RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + filename,"rw");
+        raf.seek(offset);
+        raf.write(filepiece);
+        raf.close();
     }
 
     public int chooseRandomMissingPiece(){
@@ -197,14 +223,6 @@ public class MessageProtocol {
         Random random = new Random();
         return random.nextInt(indicesOfMissingPieces.size()-1);
     }
-
-//    private byte[] setZeroes(byte[] byteArray){
-//        for(int i=0; i < byteArray.length; i++){
-//            if(byteArray[i] == 0)
-//                byteArray[i] = (byte) '0';
-//        }
-//        return byteArray;
-//    }
 
     public String padLeft(String s, int length) {
         return String.format("%" + length + "s", s).replace(' ','0');
