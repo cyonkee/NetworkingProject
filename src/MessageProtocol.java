@@ -1,6 +1,11 @@
-import java.io.*;
-import java.util.*;
-import java.lang.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created by cyonkee on 10/23/17.
@@ -12,7 +17,13 @@ public class MessageProtocol {
     private ObjectInputStream in;	//stream read from the socket
     private ObjectOutputStream out;    //stream write to the socket
     private int pieceSize;
+    private int lastPieceSize;
+    private int numOfPieces;
     private String filename;
+    private HashMap map;
+    private Neighbor n;
+    private Config attributes;
+    private BitSet bitfield;
 
     public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
@@ -20,8 +31,14 @@ public class MessageProtocol {
         this.neighborID = neighborID;
         this.out = out;
         this.in = in;
-        pieceSize = peer.getAttributes().getPieceSize();
-        filename = peer.getAttributes().getFileName();
+        attributes = peer.getAttributes();
+        pieceSize = attributes.getPieceSize();
+        lastPieceSize = attributes.getLastPieceSize();
+        filename = attributes.getFileName();
+        numOfPieces = attributes.getNumOfPieces();
+        map = peer.getMap();
+        n = (Neighbor) map.get(peer.getPeerID());
+        bitfield = n.getBitfield();
     }
 
     public void doClientMessage() throws IOException, ClassNotFoundException {
@@ -33,96 +50,6 @@ public class MessageProtocol {
 
     public void doServerMessage() throws IOException, ClassNotFoundException {
         receiveMessage();
-    }
-
-    //Create 32 byte message and send
-    public void sendMessage(int type, byte[] payload) throws IOException {
-        switch (type) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-                sendRequest();
-                break;
-            case 7:
-                sendPiece(payload);
-                break;
-        }
-    }
-
-    public void sendPiece(byte[] payload) throws IOException {
-        String piece = new String(payload);
-        int pieceIndex = Integer.parseInt(piece);
-        int offset = pieceIndex * pieceSize;
-
-        //get piece of file
-        RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + filename,"r");
-        raf.seek(offset);
-        byte[] pieceOfFile = new byte[pieceSize];
-        raf.readFully(pieceOfFile);
-        raf.close();
-
-        //get msg values
-        byte[] output = new byte[pieceSize + 5 + 4];
-        String lengthMsg = Integer.toString(pieceSize + 1);
-        lengthMsg = padLeft(lengthMsg,4);
-        String type = "7";
-        byte[] lengthMsgBytes = lengthMsg.getBytes();
-        byte[] typeBytes = type.getBytes();
-
-        //msg length
-        for(int i=0; i<4; i++)
-            output[i] = lengthMsgBytes[i];
-
-        //msg type
-        output[4] = typeBytes[0];
-
-        //msg payload (piece index and piece being sent)
-        for(int i=0; i<4; i++)
-            output[i+5] = payload[i];
-
-        for(int i=0; i<pieceSize; i++)
-            output[i+9] = pieceOfFile[i];
-
-        //test
-        String s = new String(output);
-        System.out.println(s);
-
-        out.write(output);
-        out.flush();
-    }
-
-    public void sendRequest() throws IOException {
-        int randomIndex = chooseRandomMissingPiece();
-        byte[] output = new byte[9];
-        String lengthMsg = "0005";
-        String type = "6";
-        String pieceIndex = Integer.toString(randomIndex);
-        pieceIndex = padLeft(pieceIndex,4);
-        byte[] lengthMsgBytes = lengthMsg.getBytes();
-        byte[] typeBytes = type.getBytes();
-        byte[] pieceIndexBytes = pieceIndex.getBytes();
-
-        //msg length
-        for(int i=0; i<4; i++)
-            output[i] = lengthMsgBytes[i];
-
-        //msg type
-        output[4] = typeBytes[0];
-
-        //payload (piece being requested)
-        for(int i=0; i<4; i++)
-            output[i+5] = pieceIndexBytes[i];
-
-        //test
-        String s = new String(output);
-        System.out.println(s);
-
-        out.write(output);
-        out.flush();
     }
 
     public void receiveMessage() throws IOException, ClassNotFoundException{
@@ -151,6 +78,7 @@ public class MessageProtocol {
         String s = new String(input);
         System.out.println(s);
 
+        //prepare to send appropriate message for type received
         switch (mType) {
             case "0":
             case "1":
@@ -167,12 +95,112 @@ public class MessageProtocol {
                 break;
             case "7":
                 //received piece, so update bitfield and file, send "have" to peers
-                //updateBitfield(payload);
+                updateBitfield(payload);
                 updateFile(payload);
                 sendMessage(4, payload);
                 break;
         }
+    }
 
+    public void sendMessage(int type, byte[] payload) throws IOException {
+        //handle sending messages
+        switch (type) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+                sendRequest();
+                break;
+            case 7:
+                sendPiece(payload);
+                break;
+        }
+    }
+
+    public void sendPiece(byte[] payload) throws IOException {
+        String piece = new String(payload);
+        int pieceIndex = Integer.parseInt(piece);
+        int offset = pieceIndex * pieceSize;
+
+        //get piece of file. If last piece, the byte[] array is smaller.
+        RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + filename,"r");
+        raf.seek(offset);
+
+        byte[] pieceOfFile;
+        if(pieceIndex == numOfPieces - 1)
+            pieceOfFile = new byte[lastPieceSize];
+        else
+            pieceOfFile = new byte[pieceSize];
+
+        raf.readFully(pieceOfFile);
+        raf.close();
+
+        //get msg values
+        byte[] output = new byte[pieceSize + 5 + 4];
+        String lengthMsg = Integer.toString(pieceSize + 1);
+        lengthMsg = padLeft(lengthMsg,4);
+        String type = "7";
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        byte[] typeBytes = type.getBytes();
+
+        //msg length
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        //msg type
+        output[4] = typeBytes[0];
+
+        //msg payload (piece index and piece being sent)
+        for(int i=0; i<4; i++)
+            output[i+5] = payload[i];
+
+        for(int i=0; i<pieceSize; i++)
+            output[i+9] = pieceOfFile[i];
+
+        out.write(output);
+        out.flush();
+    }
+
+    public void sendRequest() throws IOException {
+        int randomIndex = chooseRandomMissingPiece();
+        byte[] output = new byte[9];
+        String lengthMsg = "0005";
+        String type = "6";
+        String pieceIndex = Integer.toString(randomIndex);
+        pieceIndex = padLeft(pieceIndex,4);
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        byte[] typeBytes = type.getBytes();
+        byte[] pieceIndexBytes = pieceIndex.getBytes();
+
+        //msg length
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        //msg type
+        output[4] = typeBytes[0];
+
+        //payload (piece being requested)
+        for(int i=0; i<4; i++)
+            output[i+5] = pieceIndexBytes[i];
+
+        out.write(output);
+        out.flush();
+    }
+
+    private void updateBitfield(byte[] payload) {
+        //get piece index
+        byte[] pieceIndex = new byte[4];
+        for(int i=0; i<4; i++)
+            pieceIndex[i] = payload[i];
+
+        String index = new String(pieceIndex);
+        int piece = Integer.parseInt(index);
+
+        //set appropriate bit in bitfield
+        bitfield.set(piece);
     }
 
     private void updateFile(byte[] payload) throws IOException {
@@ -198,13 +226,7 @@ public class MessageProtocol {
     }
 
     public int chooseRandomMissingPiece(){
-        //Get Bitfield
-        HashMap map = peer.getMap();
-        Neighbor n = (Neighbor) map.get(peer.getPeerID());
-        int numOfPieces = peer.getAttributes().getNumOfPieces();
-
-        BitSet currentBitField = n.getBitfield();
-        int bitFieldLength = currentBitField.length();
+        int bitFieldLength = bitfield.length();
 
         //Fill list with missing pieces indices
         ArrayList<Integer> indicesOfMissingPieces = new ArrayList<Integer>();
@@ -214,14 +236,14 @@ public class MessageProtocol {
         }
         else{
             for(int i=0; i<numOfPieces; i++){
-                if(currentBitField.get(i) == false)
+                if(bitfield.get(i) == false)
                     indicesOfMissingPieces.add(i);
             }
         }
 
         //Randomly select index from missing
         Random random = new Random();
-        return random.nextInt(indicesOfMissingPieces.size()-1);
+        return random.nextInt(indicesOfMissingPieces.size());
     }
 
     public String padLeft(String s, int length) {
