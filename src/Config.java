@@ -26,7 +26,7 @@ public class Config {
         fileSize = Integer.valueOf( (String) list.get(4));
         pieceSize = Integer.valueOf( (String) list.get(5));
         numOfPieces = (fileSize / pieceSize) + 1;
-        lastPieceSize = fileSize % (pieceSize - 1);
+        lastPieceSize = fileSize % pieceSize;
     }
 
     public int getNumOfPreferredNeighbors() {

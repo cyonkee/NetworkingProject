@@ -26,9 +26,11 @@ public class PeerProcess {
     private Config attributes;
     private PeersInfo peersInfo;
     private ArrayList neighborIDs = new ArrayList();
+    private PrintWriter logWriter;
 
-    public PeerProcess(String peerID){
+    public PeerProcess(String peerID) throws IOException {
         this.peerID = peerID;
+        logWriter = new PrintWriter("log_peer_" + peerID + ".log");
         configurePeer();
         parsePeersFile();
         setBitfields();
@@ -98,8 +100,9 @@ public class PeerProcess {
     public ArrayList getNeighborIDs() { return neighborIDs; }
     public HashMap getMap() { return peersInfo.getMap(); }
     public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
+    public PrintWriter getLogWriter() { return logWriter; }
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         //Start the PeerProcess and parse the files and set bitfields.
         String currentPeerID = args[0];
         PeerProcess peerProcess = new PeerProcess(currentPeerID);
@@ -128,5 +131,7 @@ public class PeerProcess {
         //Start Listening for incoming connections if not the last peer
         if(countNumber < peerProcess.getMaxCount() - 1)
             conn.startServer();
+
+        peerProcess.getLogWriter().close();
     }
 }

@@ -1,7 +1,5 @@
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -16,6 +14,7 @@ public class MessageProtocol {
     private String neighborID;
     private ObjectInputStream in;	//stream read from the socket
     private ObjectOutputStream out;    //stream write to the socket
+    private PrintWriter logWriter;
     private int pieceSize;
     private int lastPieceSize;
     private int numOfPieces;
@@ -31,6 +30,7 @@ public class MessageProtocol {
         this.neighborID = neighborID;
         this.out = out;
         this.in = in;
+        logWriter = peer.getLogWriter();
         attributes = peer.getAttributes();
         pieceSize = attributes.getPieceSize();
         lastPieceSize = attributes.getLastPieceSize();
@@ -61,6 +61,9 @@ public class MessageProtocol {
         String mLength = new String(lengthMsg);
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
+
+        //test
+        System.out.println(mLength);
 
         //store type
         in.read(input, 0, length);
@@ -121,26 +124,26 @@ public class MessageProtocol {
     }
 
     public void sendPiece(byte[] payload) throws IOException {
+        //get pieceIndex and size of piece
         String piece = new String(payload);
         int pieceIndex = Integer.parseInt(piece);
         int offset = pieceIndex * pieceSize;
+        int thisPieceSize;
+        if(pieceIndex == numOfPieces - 1)
+            thisPieceSize = lastPieceSize;
+        else
+            thisPieceSize = pieceSize;
 
         //get piece of file. If last piece, the byte[] array is smaller.
-        RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + filename,"r");
+        RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + filename,"rw");
         raf.seek(offset);
-
-        byte[] pieceOfFile;
-        if(pieceIndex == numOfPieces - 1)
-            pieceOfFile = new byte[lastPieceSize];
-        else
-            pieceOfFile = new byte[pieceSize];
-
+        byte[] pieceOfFile = new byte[thisPieceSize];
         raf.readFully(pieceOfFile);
         raf.close();
 
         //get msg values
-        byte[] output = new byte[pieceSize + 5 + 4];
-        String lengthMsg = Integer.toString(pieceSize + 1);
+        byte[] output = new byte[1 + 4 + 4 + pieceSize];
+        String lengthMsg = Integer.toString(1 + 4 + pieceSize);
         lengthMsg = padLeft(lengthMsg,4);
         String type = "7";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
@@ -157,7 +160,7 @@ public class MessageProtocol {
         for(int i=0; i<4; i++)
             output[i+5] = payload[i];
 
-        for(int i=0; i<pieceSize; i++)
+        for(int i=0; i < thisPieceSize; i++)
             output[i+9] = pieceOfFile[i];
 
         out.write(output);
@@ -223,6 +226,39 @@ public class MessageProtocol {
         raf.seek(offset);
         raf.write(filepiece);
         raf.close();
+
+        writeDownloadPieceLog(piece);
+        if(bitfield.cardinality() == numOfPieces)
+            writeFullFileDownloadLog();
+    }
+
+    private void writeDownloadPieceLog(int pieceIndex){
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
+        output += "Peer "+peer.getPeerID()+" has downloaded the piece "+pieceIndex+" from Peer "+neighborID+".";
+        output += "\nNow the number of pieces it has is " + bitfield.cardinality()+".";
+        logWriter.println(output);
+        logWriter.flush();
+    }
+
+    private void writeFullFileDownloadLog() {
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
+        output += "Peer "+peer.getPeerID()+" has downloaded the complete file.";
+        logWriter.println(output);
+        logWriter.flush();
     }
 
     public int chooseRandomMissingPiece(){

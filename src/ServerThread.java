@@ -4,7 +4,9 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 /*
@@ -34,6 +36,8 @@ public class ServerThread extends Thread {
 
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
             String neighborID = handshake.getNeighborID();
+            PrintWriter logWriter = peer.getLogWriter();
+            writeServerConnLog(logWriter,peer,neighborID);
 
             HashMap map = peer.getMap();
             Neighbor n = (Neighbor) map.get(neighborID);
@@ -51,5 +55,19 @@ public class ServerThread extends Thread {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void writeServerConnLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
+        output += "Peer "+peer.getPeerID()+" is connected from Peer "+neighborID+".";
+        logWriter.println(output);
+        logWriter.flush();
     }
 }
