@@ -88,7 +88,7 @@ public class PeerProcess {
             Neighbor n = (Neighbor) peersInfo.getMap().get(neighborids.get(i));
             BitSet bitfield = new BitSet(numOfPieces);
             if (n.getHasFile() == true) {
-                bitfield.set(0, numOfPieces, true);
+                bitfield.set(0, numOfPieces+1, true);
             }
             n.setBitfield(bitfield);
         }

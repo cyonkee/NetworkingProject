@@ -1,9 +1,6 @@
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by cyonkee on 10/23/17.
@@ -43,8 +40,9 @@ public class MessageProtocol {
 
     public void doClientMessage() throws IOException, ClassNotFoundException {
         //start messaging by sending bitfield
-        //testing request
-        sendMessage(6,null);
+        //testing bitfield
+        if (bitfield.length() != 0)
+            sendMessage(5,null);
         receiveMessage();
     }
 
@@ -63,7 +61,7 @@ public class MessageProtocol {
         byte[] input = new byte[length];
 
         //test
-        System.out.println(mLength);
+        //System.out.println(mLength);
 
         //store type
         in.read(input, 0, length);
@@ -78,8 +76,8 @@ public class MessageProtocol {
         }
 
         //test
-        String s = new String(input);
-        System.out.println(s);
+        //String s = new String(input);
+        //System.out.println(s);
 
         //prepare to send appropriate message for type received
         switch (mType) {
@@ -89,9 +87,23 @@ public class MessageProtocol {
                 sendMessage(6, null);
                 break;
             case "2":
+                System.out.println("received interested");
+                break;
             case "3":
+                System.out.println("received not interested");
+                break;
             case "4":
             case "5":
+                System.out.println("received bitfield:");
+                for (int i = 0; i<payload.length; i++) {
+                    System.out.print(payload[i]+ " ");
+                }
+                System.out.println();
+                //received Bitfield, so check if there are interesting pieces and send not/interested
+                boolean interested = findPieces(payload);
+                if (interested) sendMessage(2, null);
+                else sendMessage(3, null);
+                break;
             case "6":
                 //received request, so send piece
                 sendMessage(7, payload);
@@ -111,9 +123,15 @@ public class MessageProtocol {
             case 0:
             case 1:
             case 2:
+                sendInterested(true);
+                break;
             case 3:
+                sendInterested(false);
+                break;
             case 4:
             case 5:
+                sendBitfield();
+                break;
             case 6:
                 sendRequest();
                 break;
@@ -121,6 +139,77 @@ public class MessageProtocol {
                 sendPiece(payload);
                 break;
         }
+    }
+
+    public void sendInterested(boolean interested) throws IOException {
+        byte[] output = new byte[9];
+        String lengthMsg = "0001";
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        String type;
+        if (interested) {
+            type = "2";
+            System.out.println("sent interested");
+        }
+        else {
+            type = "3";
+            System.out.println("sent not interested");
+        }
+        byte[] typeBytes = type.getBytes();
+        output[4] = typeBytes[0];
+
+        out.write(output);
+        out.flush();
+    }
+
+    public boolean findPieces(byte[] payload) {
+        for (int i = 0; i<numOfPieces; i++) {
+            if (payload[i] == 1 && bitfield.get(i) == false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void sendBitfield() throws IOException {
+        //Transform bitfield to byte[]
+        byte[] pieces = new byte[numOfPieces];
+        System.out.println("Number of pieces: "+numOfPieces);
+        for(int i=0; i<pieces.length; i++){
+            if(bitfield.get(i) == false)
+                pieces[i] = 0;
+            else
+                pieces[i] = 1;
+        }
+
+        //Output msg
+        byte[] output = new byte[5+pieces.length];
+
+        //msg length
+        String lengthMsg = Integer.toString( pieces.length + 1);
+        lengthMsg = padLeft(lengthMsg, 4);
+
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        //msg type
+        String type = "5";
+        byte[] typeBytes = type.getBytes();
+        output[4] = typeBytes[0];
+
+        //msg payload = bitfield
+        for(int i=0; i<pieces.length; i++) {
+            output[i+5] = pieces[i];
+            System.out.print(output[i+5]+" ");
+        }
+
+
+        System.out.println("sent bitfield");
+        out.write(output);
+        out.flush();
     }
 
     public void sendPiece(byte[] payload) throws IOException {
