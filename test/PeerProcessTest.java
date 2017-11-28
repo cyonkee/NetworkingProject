@@ -1,17 +1,16 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.security.auth.login.Configuration;
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Created by cyonkee on 10/12/17.
  */
 public class PeerProcessTest {
     @Test
-    public void constructorTest(){
+    public void constructorTest() throws IOException {
         PeerProcess p = new PeerProcess("1000");
         String id = p.getPeerID();
         System.out.println(id + "\n");
@@ -19,7 +18,7 @@ public class PeerProcessTest {
     }
 
     @Test
-    public void configurePeerTest(){
+    public void configurePeerTest() throws IOException {
         PeerProcess p = new PeerProcess("1000");
         Config attr = p.getAttributes();
 
@@ -43,7 +42,7 @@ public class PeerProcessTest {
     }
 
     @Test
-    public void findPeersInfoTest(){
+    public void findPeersInfoTest() throws IOException {
         PeerProcess p = new PeerProcess("1001");
         PeersInfo peersinfo = p.getPeersInfo();
         HashMap map = peersinfo.getMap();
@@ -86,7 +85,7 @@ public class PeerProcessTest {
     }
 
     @Test
-    public void testBitfields() {
+    public void testBitfields() throws IOException {
         PeerProcess p = new PeerProcess("1001");
         PeersInfo peersinfo = p.getPeersInfo();
         HashMap map = peersinfo.getMap();
