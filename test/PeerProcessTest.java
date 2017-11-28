@@ -98,4 +98,20 @@ public class PeerProcessTest {
         //Assertions.assertEquals("lin114-05.cise.ufl.edu", n1.getBitfield());
 
     }
+
+    @Test
+    public void testBitfieldArrayCopy() {
+        BitSet bitfield = new BitSet(10);
+        bitfield.set(3);
+        byte[] pieces = new byte[10];
+        for(int i=0; i<pieces.length; i++){
+            if(bitfield.get(i) == true)
+                pieces[i] = 1;
+            else
+                pieces[i] = 0;
+        }
+
+        for(int i=0; i<pieces.length; i++)
+            System.out.println(pieces[i]);
+    }
 }
