@@ -43,7 +43,12 @@ public class MessageProtocol {
         //testing bitfield
         if (bitfield.length() != 0)
             sendMessage(5,null);
-        receiveMessage();
+
+        //sendMessage(2,null);
+        //receiveMessage();
+
+        //sendMessage(6,null);
+        //receiveMessage();
     }
 
     public void doServerMessage() throws IOException, ClassNotFoundException {
@@ -82,19 +87,22 @@ public class MessageProtocol {
         //prepare to send appropriate message for type received
         switch (mType) {
             case "0":
+                break;
             case "1":
                 //received Unchoke, so send request for piece
+                System.out.println("received unchoke");
                 sendMessage(6, null);
                 break;
             case "2":
                 System.out.println("received interested");
+                sendMessage(1,null);
                 break;
             case "3":
                 System.out.println("received not interested");
                 break;
             case "4":
+                break;
             case "5":
-                System.out.println("received bitfield:");
                 for (int i = 0; i<payload.length; i++) {
                     System.out.print(payload[i]+ " ");
                 }
@@ -106,6 +114,7 @@ public class MessageProtocol {
                 break;
             case "6":
                 //received request, so send piece
+                System.out.println("received request");
                 sendMessage(7, payload);
                 break;
             case "7":
@@ -121,7 +130,11 @@ public class MessageProtocol {
         //handle sending messages
         switch (type) {
             case 0:
+                sendChoke(true);
+                break;
             case 1:
+                sendChoke(false);
+                break;
             case 2:
                 sendInterested(true);
                 break;
@@ -134,11 +147,36 @@ public class MessageProtocol {
                 break;
             case 6:
                 sendRequest();
+                System.out.println("sent request");
                 break;
             case 7:
                 sendPiece(payload);
+                System.out.println("sent piece");
                 break;
         }
+    }
+
+    public void sendChoke(boolean choke) throws IOException {
+        byte[] output = new byte[9];
+        String lengthMsg = "0001";
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        String type;
+        if (choke) {
+            type = "0";
+            System.out.println("sent choke");
+        }
+        else {
+            type = "1";
+            System.out.println("sent unchoke");
+        }
+        byte[] typeBytes = type.getBytes();
+        output[4] = typeBytes[0];
+
+        out.write(output);
+        out.flush();
     }
 
     public void sendInterested(boolean interested) throws IOException {
