@@ -49,6 +49,7 @@ public class MessageProtocol {
     }
 
     public void doServerMessage() throws IOException, ClassNotFoundException {
+        sendMessage(5,null);
         receiveMessage();
     }
 
@@ -92,27 +93,27 @@ public class MessageProtocol {
                 break;
             case "2":
                 System.out.println("received interested");
+                writeReceivedInterestedLog("interested");
                 sendMessage(1,null);
                 break;
             case "3":
+                writeReceivedInterestedLog("not interested");
                 System.out.println("received not interested");
                 break;
             case "4":
                 break;
             case "5":
-                // receives bitfield
+                //receives bitfield
                 for (int i = 0; i<payload.length; i++) {
                     System.out.print(payload[i]+ " ");
                 }
                 System.out.println();
-                if (!isClient) {
-                    sendMessage(5,null);
-                } else {
-                    //received Bitfield, so check if there are interesting pieces and send not/interested
-                    boolean interested = findPieces(payload);
-                    if (interested) sendMessage(2, null);
-                    else sendMessage(3, null);
-                }
+
+                //received Bitfield, so check if there are interesting pieces and send not/interested
+                boolean interested = findPieces(payload);
+                if (interested) sendMessage(2, null);
+                else sendMessage(3, null);
+
                 break;
             case "6":
                 //received request, so send piece
@@ -247,7 +248,6 @@ public class MessageProtocol {
             System.out.print(output[i+5]+" ");
         }
 
-
         System.out.println("sent bitfield");
         out.write(output);
         out.flush();
@@ -360,6 +360,19 @@ public class MessageProtocol {
         writeDownloadPieceLog(piece);
         if(bitfield.cardinality() == numOfPieces)
             writeFullFileDownloadLog();
+    }
+    private void writeReceivedInterestedLog(String interested){
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
+        output += "Peer "+peer.getPeerID()+ "received the ‘"+interested+"’ message from "+neighborID+".";
+        logWriter.println(output);
+        logWriter.flush();
     }
 
     private void writeDownloadPieceLog(int pieceIndex){
