@@ -123,7 +123,10 @@ public class PeerProcess {
                 String id = (String) it.next();
                 Neighbor n = (Neighbor) map.get(id);
                 if(countNumber > n.getPeerCount()){
-                    conn.startClient(n);
+                    DoStartClientRunner runner = new DoStartClientRunner(conn, n);
+                    Thread clientThread = new Thread(runner);
+                    clientThread.start();
+                    //conn.startClient(n);
                 }
             }
         }
