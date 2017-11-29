@@ -7,6 +7,8 @@ import java.util.*;
  */
 public class MessageProtocol {
     private boolean isClient;
+    private boolean interestedJustSent;
+    private boolean chokeJustSent;
     private PeerProcess peer;
     private String neighborID;
     private ObjectInputStream in;	//stream read from the socket
@@ -27,6 +29,8 @@ public class MessageProtocol {
         this.neighborID = neighborID;
         this.out = out;
         this.in = in;
+        interestedJustSent = false;
+        chokeJustSent = false;
         logWriter = peer.getLogWriter();
         attributes = peer.getAttributes();
         pieceSize = attributes.getPieceSize();
@@ -82,46 +86,97 @@ public class MessageProtocol {
         //String s = new String(input);
         //System.out.println(s);
 
+        boolean interested;
+
         //prepare to send appropriate message for type received
         switch (mType) {
             case "0":
+                //received choke
+                if(chokeJustSent){
+                    //start requesting sequence and wait for timeout, etc.
+                    chokeJustSent = false;
+                }
+                else{
+                    //sendMessage(0,null) or sendMessage(1,null)
+                }
                 break;
+                
             case "1":
-                //received Unchoke, so send request for piece
+                //received Unchoke
                 System.out.println("received unchoke");
-                //sendMessage(6, null);
+                if(chokeJustSent){
+                    //start requesting
+                    //sendMessage(6, null);
+                    chokeJustSent = false;
+                }
+                else{
+                    //sendMessage(0,null) or sendMessage(1,null)
+                }
                 break;
+
             case "2":
+                //received interested
                 System.out.println("received interested");
                 writeReceivedInterestedLog("interested");
-                sendMessage(1,null);
+                if(interestedJustSent) {
+                    //sendMessage(1,null); or sendMessage(0,null)
+                    interestedJustSent = false;
+                    chokeJustSent = true;
+                }
+                else{
+                    interested = findPieces(payload);
+                    if (interested) sendMessage(2, null);
+                    else sendMessage(3, null);
+                }
                 break;
+
             case "3":
+                //received not interested
                 writeReceivedInterestedLog("not interested");
                 System.out.println("received not interested");
+                if(interestedJustSent) {
+                    //sendMessage(1,null); or sendMessage(0,null)
+                    interestedJustSent = false;
+                    chokeJustSent = true;
+                }
+                else{
+                    interested = findPieces(payload);
+                    if (interested) sendMessage(2, null);
+                    else sendMessage(3, null);
+                }
                 break;
+
             case "4":
+                //received HAVE message
+                interested = findPieces(payload);
+                if (interested) sendMessage(2, null);
+                else sendMessage(3, null);
+                interestedJustSent = true;
                 break;
+
             case "5":
-                //receives bitfield
+                //received bitfield
                 for (int i = 0; i<payload.length; i++) {
                     System.out.print(payload[i]+ " ");
                 }
                 System.out.println();
 
                 //received Bitfield, so check if there are interesting pieces and send not/interested
-                boolean interested = findPieces(payload);
+                interested = findPieces(payload);
                 if (interested) sendMessage(2, null);
                 else sendMessage(3, null);
+                interestedJustSent = true;
 
                 break;
+
             case "6":
                 //received request, so send piece
                 System.out.println("received request");
                 sendMessage(7, payload);
                 break;
+
             case "7":
-                //received piece, so update bitfield and file, send "have" to peers
+                //received piece, so update bitfield and file
                 updateBitfield(payload);
                 updateFile(payload);
                 sendMessage(4, payload);
