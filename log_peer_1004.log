@@ -1,4 +1,44 @@
-11/28/2017 21:44:51: Peer 1004 makes connection to Peer 1003.
-11/28/2017 21:44:51: Peer 1004 makes connection to Peer 1001.
-11/28/2017 21:44:51: Peer 1004 makes connection to Peer 1002.
-11/28/2017 21:45:3: Peer 1004 is connected from Peer 1005.
+11/30/2017 1:53:23: Peer 1004 makes connection to Peer 1002.
+11/30/2017 1:53:23: Peer 1004 makes connection to Peer 1001.
+11/30/2017 1:53:23: Peer 1004 makes connection to Peer 1003.
+11/30/2017 1:53:23: Peer 1004received the ‘not interested’ message from 1001.
+11/30/2017 1:53:23: Peer 1004received the ‘not interested’ message from 1003.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 4 from Peer 1003.
+Now the number of pieces it has is 2.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 7 from Peer 1001.
+Now the number of pieces it has is 2.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 13 from Peer 1003.
+Now the number of pieces it has is 3.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 3 from Peer 1001.
+Now the number of pieces it has is 4.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 9 from Peer 1003.
+Now the number of pieces it has is 5.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 10 from Peer 1001.
+Now the number of pieces it has is 6.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 12 from Peer 1003.
+Now the number of pieces it has is 7.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 1 from Peer 1001.
+Now the number of pieces it has is 8.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 1 from Peer 1003.
+Now the number of pieces it has is 8.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 0 from Peer 1001.
+Now the number of pieces it has is 9.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 6 from Peer 1003.
+Now the number of pieces it has is 10.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 5 from Peer 1003.
+Now the number of pieces it has is 12.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 11 from Peer 1001.
+Now the number of pieces it has is 12.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 8 from Peer 1001.
+Now the number of pieces it has is 13.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 8 from Peer 1003.
+Now the number of pieces it has is 13.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 2 from Peer 1003.
+Now the number of pieces it has is 14.
+11/30/2017 1:53:23: Peer 1004 has downloaded the piece 2 from Peer 1001.
+Now the number of pieces it has is 14.
+11/30/2017 1:53:23: Peer 1004 has downloaded the complete file.
+11/30/2017 1:53:23: Peer 1004 has downloaded the complete file.
+11/30/2017 1:53:23: Peer 1004received the ‘not interested’ message from 1002.
+11/30/2017 1:53:56: Peer 1004 is connected from Peer 1005.
+11/30/2017 1:53:56: Peer 1004received the ‘interested’ message from 1005.

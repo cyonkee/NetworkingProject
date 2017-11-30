@@ -60,7 +60,7 @@ public class MessageProtocol {
 
         //read in the message type and the payload
         String mLength = new String(lengthMsg);
-        System.out.println(mLength);
+        System.out.println("mLength: " + mLength);
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
 
@@ -105,12 +105,13 @@ public class MessageProtocol {
                 break;
             case "5":
                 //receives bitfield
-                for (int i = 0; i<payload.length; i++) {
+                /*for (int i = 0; i<payload.length; i++) {
                     System.out.print(payload[i]+ " ");
                 }
-                System.out.println();
+                System.out.println();*/
 
                 //received Bitfield, so check if there are interesting pieces and send not/interested
+                System.out.println("received bitfield");
                 boolean interested = findPieces(payload);
                 if (interested) sendMessage(2, null);
                 else sendMessage(3, null);
@@ -194,8 +195,12 @@ public class MessageProtocol {
         byte[] output = new byte[5];
         String lengthMsg = "0001";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
-        for(int i=0; i<4; i++)
+        System.out.print("lengthMsgBytes: ");
+        for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
+            System.out.print(lengthMsgBytes[i]);
+        }
+        System.out.println("");
 
         String type;
         if (interested) {
@@ -252,7 +257,7 @@ public class MessageProtocol {
         //msg payload = bitfield
         for(int i=0; i<pieces.length; i++) {
             output[i+5] = pieces[i];
-            System.out.print(output[i+5]+" ");
+            //System.out.print(output[i+5]+" ");
         }
 
         System.out.println("sent bitfield");
@@ -264,6 +269,7 @@ public class MessageProtocol {
         //get pieceIndex and size of piece
         String piece = new String(payload);
         int pieceIndex = Integer.parseInt(piece);
+        System.out.println("pieceIndex: "+ pieceIndex);
         int offset = pieceIndex * pieceSize;
         int thisPieceSize;
         if(pieceIndex == numOfPieces - 1)
@@ -277,21 +283,24 @@ public class MessageProtocol {
         byte[] pieceOfFile = new byte[thisPieceSize];
         raf.readFully(pieceOfFile);
         raf.close();
-        String s = new String(pieceOfFile);
-        if(pieceIndex == numOfPieces - 1)
-            System.out.println("Piece of file: " + s);
+
 
         //get msg values
         byte[] output = new byte[1 + 4 + 4 + thisPieceSize];
         String lengthMsg = Integer.toString(1 + 4 + thisPieceSize);
         lengthMsg = padLeft(lengthMsg,4);
+        System.out.println("lengthMsg: " + lengthMsg);
         String type = "7";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
         byte[] typeBytes = type.getBytes();
 
         //msg length
-        for(int i=0; i<4; i++)
+        System.out.print("msg length: ");
+        for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
+            System.out.print(lengthMsgBytes[i] + " ");
+        }
+        System.out.println("");
 
         //msg type
         output[4] = typeBytes[0];
