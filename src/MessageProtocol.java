@@ -104,6 +104,7 @@ public class MessageProtocol {
                     chokeJustSent = false;
                 }
                 else{
+                    //send choke or unchoke
                     //sendMessage(0,null) or sendMessage(1,null)
                 }
                 break;
@@ -117,6 +118,7 @@ public class MessageProtocol {
                     chokeJustSent = false;
                 }
                 else{
+                    //send choke or unchoke
                     //sendMessage(0,null) or sendMessage(1,null)
                 }
                 break;
@@ -126,11 +128,13 @@ public class MessageProtocol {
                 System.out.println("received interested");
                 writeReceivedInterestedLog("interested");
                 if(interestedJustSent) {
+                    //send choke or unchoke
                     //sendMessage(1,null); or sendMessage(0,null)
                     interestedJustSent = false;
                     chokeJustSent = true;
                 }
                 else{
+                    //send interested/not interested
                     interested = findPieces(payload);
                     if (interested) sendMessage(2, null);
                     else sendMessage(3, null);
@@ -142,11 +146,13 @@ public class MessageProtocol {
                 writeReceivedInterestedLog("not interested");
                 System.out.println("received not interested");
                 if(interestedJustSent) {
+                    //send choke or unchoke
                     //sendMessage(1,null); or sendMessage(0,null)
                     interestedJustSent = false;
                     chokeJustSent = true;
                 }
                 else{
+                    //send interested/not interested
                     interested = findPieces(payload);
                     if (interested) sendMessage(2, null);
                     else sendMessage(3, null);
@@ -154,7 +160,7 @@ public class MessageProtocol {
                 break;
 
             case "4":
-                //received HAVE message
+                //received HAVE message, so send interested/not interested
                 interested = findPieces(payload);
                 if (interested) sendMessage(2, null);
                 else sendMessage(3, null);
