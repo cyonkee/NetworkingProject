@@ -64,6 +64,7 @@ public class MessageProtocol {
 
         //read in the message type and the payload
         String mLength = new String(lengthMsg);
+        System.out.println(mLength);
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
 
@@ -100,7 +101,7 @@ public class MessageProtocol {
                     //sendMessage(0,null) or sendMessage(1,null)
                 }
                 break;
-                
+
             case "1":
                 //received Unchoke
                 System.out.println("received unchoke");
@@ -179,7 +180,12 @@ public class MessageProtocol {
                 //received piece, so update bitfield and file
                 updateBitfield(payload);
                 updateFile(payload);
-                sendMessage(4, payload);
+                if (bitfield.cardinality() != numOfPieces) {
+                    sendMessage(6, payload);
+                } else {
+                    System.out.println("HAS FULL FILE");
+                }
+
                 break;
         }
     }
@@ -200,6 +206,7 @@ public class MessageProtocol {
                 sendInterested(false);
                 break;
             case 4:
+                break;
             case 5:
                 sendBitfield();
                 break;
@@ -325,10 +332,13 @@ public class MessageProtocol {
         byte[] pieceOfFile = new byte[thisPieceSize];
         raf.readFully(pieceOfFile);
         raf.close();
+        String s = new String(pieceOfFile);
+        if(pieceIndex == numOfPieces - 1)
+            System.out.println("Piece of file: " + s);
 
         //get msg values
-        byte[] output = new byte[4 + 1 + 4 + pieceSize];
-        String lengthMsg = Integer.toString(1 + 4 + pieceSize);
+        byte[] output = new byte[1 + 4 + 4 + thisPieceSize];
+        String lengthMsg = Integer.toString(1 + 4 + thisPieceSize);
         lengthMsg = padLeft(lengthMsg,4);
         String type = "7";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
@@ -470,14 +480,19 @@ public class MessageProtocol {
         }
         else{
             for(int i=0; i<numOfPieces; i++){
-                if(bitfield.get(i) == false)
+                if(!bitfield.get(i)) {
                     indicesOfMissingPieces.add(i);
+                    System.out.print(i + " ");
+                }
             }
         }
 
         //Randomly select index from missing
         Random random = new Random();
-        return random.nextInt(indicesOfMissingPieces.size());
+        int randomIndex = random.nextInt(indicesOfMissingPieces.size());
+        System.out.println("Random Index: " + randomIndex);
+        System.out.println("indicesOfMissingPieces.size(): " + indicesOfMissingPieces.size());
+        return indicesOfMissingPieces.get(randomIndex);
     }
 
     public String padLeft(String s, int length) {
