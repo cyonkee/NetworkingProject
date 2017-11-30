@@ -319,8 +319,8 @@ public class MessageProtocol {
         out.write(output);
         out.flush();
 
-        peer.incrementDownloads(neighborID);
-        System.out.println("Number of downloads for peer " + neighborID + ": " + peer.getDownloads().get(neighborID));
+        //peer.incrementDownloads(neighborID);
+        //System.out.println("Number of downloads for peer " + neighborID + ": " + peer.getDownloads().get(neighborID));
     }
 
     public void sendRequest() throws IOException {
