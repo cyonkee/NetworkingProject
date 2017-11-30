@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.Buffer;
 import java.util.*;
 
 /**
@@ -8,10 +9,13 @@ public class HandshakeProtocol {
     private boolean isClient;
     private String peerID;
     private String neighborID;
-    private ObjectInputStream in;	//stream read from the socket
-    private ObjectOutputStream out;    //stream write to the socket
+    //private ObjectInputStream in;	//stream read from the socket
+    //private ObjectOutputStream out;    //stream write to the socket
+    private BufferedInputStream in;
+    private BufferedOutputStream out;
 
-    public HandshakeProtocol(boolean isClient, String peerID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    //public HandshakeProtocol(boolean isClient, String peerID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    public HandshakeProtocol(boolean isClient, String peerID, BufferedInputStream in, BufferedOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
         this.peerID = peerID;
         this.out = out;

@@ -27,6 +27,7 @@ public class PeerProcess {
     private PeersInfo peersInfo;
     private ArrayList neighborIDs = new ArrayList();
     private PrintWriter logWriter;
+    private HashMap<String, Integer> downloads;
 
     public PeerProcess(String peerID) throws IOException {
         this.peerID = peerID;
@@ -34,6 +35,7 @@ public class PeerProcess {
         configurePeer();
         parsePeersFile();
         setBitfields();
+        this.downloads = new HashMap<String, Integer>();
     }
 
     private void configurePeer(){
@@ -101,6 +103,14 @@ public class PeerProcess {
     public HashMap getMap() { return peersInfo.getMap(); }
     public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
     public PrintWriter getLogWriter() { return logWriter; }
+    public HashMap<String, Integer> getDownloads() { return downloads; }
+
+    public void incrementDownloads(String neighborID) {
+        if (downloads.get(neighborID) == null)
+            downloads.put(neighborID, 1);
+        else
+            downloads.put(neighborID, downloads.get(neighborID) + 1);
+    }
 
     public static void main(String[] args) throws IOException {
         //Start the PeerProcess and parse the files and set bitfields.

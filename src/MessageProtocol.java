@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.Buffer;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -11,8 +12,10 @@ public class MessageProtocol {
     private boolean chokeJustSent;
     private PeerProcess peer;
     private String neighborID;
-    private ObjectInputStream in;	//stream read from the socket
-    private ObjectOutputStream out;    //stream write to the socket
+    //private ObjectInputStream in;	//stream read from the socket
+    //private ObjectOutputStream out;    //stream write to the socket
+    private BufferedInputStream in;
+    private BufferedOutputStream out;
     private PrintWriter logWriter;
     private int pieceSize;
     private int lastPieceSize;
@@ -23,7 +26,8 @@ public class MessageProtocol {
     private Config attributes;
     private BitSet bitfield;
 
-    public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    //public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, BufferedInputStream in, BufferedOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
         this.peer = peer;
         this.neighborID = neighborID;
@@ -64,7 +68,7 @@ public class MessageProtocol {
 
         //read in the message type and the payload
         String mLength = new String(lengthMsg);
-        System.out.println(mLength);
+        System.out.println("mLength: " + mLength);
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
 
@@ -249,8 +253,12 @@ public class MessageProtocol {
         byte[] output = new byte[5];
         String lengthMsg = "0001";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
-        for(int i=0; i<4; i++)
+        System.out.print("lengthMsgBytes: ");
+        for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
+            System.out.print(lengthMsgBytes[i]);
+        }
+        System.out.println("");
 
         String type;
         if (interested) {
@@ -307,7 +315,7 @@ public class MessageProtocol {
         //msg payload = bitfield
         for(int i=0; i<pieces.length; i++) {
             output[i+5] = pieces[i];
-            System.out.print(output[i+5]+" ");
+            //System.out.print(output[i+5]+" ");
         }
 
         System.out.println("sent bitfield");
@@ -319,6 +327,7 @@ public class MessageProtocol {
         //get pieceIndex and size of piece
         String piece = new String(payload);
         int pieceIndex = Integer.parseInt(piece);
+        System.out.println("pieceIndex: "+ pieceIndex);
         int offset = pieceIndex * pieceSize;
         int thisPieceSize;
         if(pieceIndex == numOfPieces - 1)
@@ -332,21 +341,24 @@ public class MessageProtocol {
         byte[] pieceOfFile = new byte[thisPieceSize];
         raf.readFully(pieceOfFile);
         raf.close();
-        String s = new String(pieceOfFile);
-        if(pieceIndex == numOfPieces - 1)
-            System.out.println("Piece of file: " + s);
+
 
         //get msg values
         byte[] output = new byte[1 + 4 + 4 + thisPieceSize];
         String lengthMsg = Integer.toString(1 + 4 + thisPieceSize);
         lengthMsg = padLeft(lengthMsg,4);
+        System.out.println("lengthMsg: " + lengthMsg);
         String type = "7";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
         byte[] typeBytes = type.getBytes();
 
         //msg length
-        for(int i=0; i<4; i++)
+        System.out.print("msg length: ");
+        for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
+            System.out.print(lengthMsgBytes[i] + " ");
+        }
+        System.out.println("");
 
         //msg type
         output[4] = typeBytes[0];
@@ -360,6 +372,9 @@ public class MessageProtocol {
 
         out.write(output);
         out.flush();
+
+        peer.incrementDownloads(neighborID);
+        System.out.println("Number of downloads for peer " + neighborID + ": " + peer.getDownloads().get(neighborID));
     }
 
     public void sendRequest() throws IOException {
