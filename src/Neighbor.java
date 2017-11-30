@@ -3,6 +3,7 @@
  */
 
 import java.util.*;
+import java.net.*;
 
 /*
 This is the object that holds info about each peer from
@@ -14,7 +15,7 @@ public class Neighbor {
     private boolean hasFile;
     private BitSet bitfield;
     private int peerCount;
-    private MessageProtocol m;
+    private Socket socket;
 
     public Neighbor(String hostname, String port, String hasFile, int peerCount){
         this.hostname = hostname;
@@ -23,7 +24,7 @@ public class Neighbor {
         this.peerCount = peerCount;
     }
 
-    public void setConnection(MessageProtocol m){ this.m = m; }
+    public void setSocket(Socket socket){ this.socket = socket; }
 
     public void setBitfield(BitSet bitfield) {
         this.bitfield = bitfield;
@@ -47,5 +48,5 @@ public class Neighbor {
         return peerCount;
     }
 
-    public MessageProtocol getConnection(){ return m; }
+    public Socket getSocket(){ return socket; }
 }
