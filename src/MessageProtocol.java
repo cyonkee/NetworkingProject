@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.Buffer;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -9,8 +10,10 @@ public class MessageProtocol {
     private boolean isClient;
     private PeerProcess peer;
     private String neighborID;
-    private ObjectInputStream in;	//stream read from the socket
-    private ObjectOutputStream out;    //stream write to the socket
+    //private ObjectInputStream in;	//stream read from the socket
+    //private ObjectOutputStream out;    //stream write to the socket
+    private BufferedInputStream in;
+    private BufferedOutputStream out;
     private PrintWriter logWriter;
     private int pieceSize;
     private int lastPieceSize;
@@ -21,7 +24,8 @@ public class MessageProtocol {
     private Config attributes;
     private BitSet bitfield;
 
-    public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    //public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+    public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, BufferedInputStream in, BufferedOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
         this.peer = peer;
         this.neighborID = neighborID;
@@ -314,6 +318,9 @@ public class MessageProtocol {
 
         out.write(output);
         out.flush();
+
+        peer.incrementDownloads(neighborID);
+        System.out.println("Number of downloads for peer " + neighborID + ": " + peer.getDownloads().get(neighborID));
     }
 
     public void sendRequest() throws IOException {
