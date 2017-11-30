@@ -1,4 +1,5 @@
 import java.net.*;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.io.*;
 import java.lang.*;
@@ -8,47 +9,56 @@ import java.lang.*;
  */
 public class Client {
     private Socket socket = null;
-    private ObjectInputStream in;	//stream read from the socket
-    private ObjectOutputStream out;    //stream write to the socket
+    //private ObjectInputStream in;	//stream read from the socket
+    //private ObjectOutputStream out;    //stream write to the socket
+    private BufferedInputStream in;
+    private BufferedOutputStream out;
     private boolean isClient = true;
 
     public Client(Socket socket) throws IOException{
         this.socket = socket;
     }
 
-    public void startConnection(int serverPort, PeerProcess peer) {
+    public void startConnection(PeerProcess peer) {
         try{
-            out = new ObjectOutputStream(socket.getOutputStream());
+            //out = new ObjectOutputStream(socket.getOutputStream());
+            out = new BufferedOutputStream(socket.getOutputStream());
             out.flush();
-            in = new ObjectInputStream(socket.getInputStream());
+            //in = new ObjectInputStream(socket.getInputStream());
+            in = new BufferedInputStream(socket.getInputStream());
 
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
+            String neighborID = handshake.getNeighborID();
+            PrintWriter logWriter = peer.getLogWriter();
+            writeClientConnLog(logWriter,peer,neighborID);
 
-//            String fromServer;
-//            String fromUser;
-//            fromUser = "Hello Server at port " + serverPort;
-//            System.out.println(fromUser);
-//            out.println(fromUser);
-//
-//            fromServer = in.readLine();
-//            System.out.println("Server: " + fromServer);
-//
-//            fromUser = "I am Client " + peer.getPeerID();
-//            System.out.println(fromUser);
-//            out.println(fromUser);
-//            while ((fromServer = in.readLine()) != null) {
-//                System.out.println("Server: " + fromServer);
-//
-//                fromUser = stdIn.readLine();
-//                if (fromUser != null) {
-//                    System.out.println("Client: " + fromUser);
-//                    out.println(fromUser);
-//                }
-//            }
+            HashMap map = peer.getMap();
+            Neighbor n = (Neighbor) map.get(neighborID);
+            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
+            n.setConnection(m);
+
+            //Testing connections
+            System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+
+            m.doClientMessage();
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+    private void writeClientConnLog(PrintWriter logWriter,PeerProcess peer,String neighborID){
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
+        output += "Peer "+peer.getPeerID()+" makes connection to Peer "+neighborID+".";
+        logWriter.println(output);
+        logWriter.flush();
     }
 }

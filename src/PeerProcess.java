@@ -26,12 +26,16 @@ public class PeerProcess {
     private Config attributes;
     private PeersInfo peersInfo;
     private ArrayList neighborIDs = new ArrayList();
+    private PrintWriter logWriter;
+    private HashMap<String, Integer> downloads;
 
-    public PeerProcess(String peerID){
+    public PeerProcess(String peerID) throws IOException {
         this.peerID = peerID;
+        logWriter = new PrintWriter("log_peer_" + peerID + ".log");
         configurePeer();
         parsePeersFile();
         setBitfields();
+        this.downloads = new HashMap<String, Integer>();
     }
 
     private void configurePeer(){
@@ -81,11 +85,12 @@ public class PeerProcess {
 
     private void setBitfields(){
         ArrayList neighborids = getNeighborIDs();
+        int numOfPieces = attributes.getFileSize() / attributes.getPieceSize();
         for (int i=0; i<getMaxCount(); i++){
             Neighbor n = (Neighbor) peersInfo.getMap().get(neighborids.get(i));
-            BitSet bitfield = new BitSet();
+            BitSet bitfield = new BitSet(numOfPieces);
             if (n.getHasFile() == true) {
-                bitfield.set(0, attributes.getFileSize(), true);
+                bitfield.set(0, numOfPieces+1, true);
             }
             n.setBitfield(bitfield);
         }
@@ -97,8 +102,17 @@ public class PeerProcess {
     public ArrayList getNeighborIDs() { return neighborIDs; }
     public HashMap getMap() { return peersInfo.getMap(); }
     public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
+    public PrintWriter getLogWriter() { return logWriter; }
+    public HashMap<String, Integer> getDownloads() { return downloads; }
 
-    public static void main(String[] args){
+    public void incrementDownloads(String neighborID) {
+        if (downloads.get(neighborID) == null)
+            downloads.put(neighborID, 1);
+        else
+            downloads.put(neighborID, downloads.get(neighborID) + 1);
+    }
+
+    public static void main(String[] args) throws IOException {
         //Start the PeerProcess and parse the files and set bitfields.
         String currentPeerID = args[0];
         PeerProcess peerProcess = new PeerProcess(currentPeerID);
@@ -112,14 +126,17 @@ public class PeerProcess {
         TCPConnection conn = new TCPConnection(peerProcess);
 
         //if first peer in list then just listen
-        //other peers start listening and also connect to peers below in the list
+        //other peers connect to peers below in the list
         if(countNumber > 0){
             Iterator it = peerProcess.getNeighborIDs().iterator();
             while(it.hasNext()){
                 String id = (String) it.next();
                 Neighbor n = (Neighbor) map.get(id);
                 if(countNumber > n.getPeerCount()){
-                    conn.startClient(n);
+                    DoStartClientRunner runner = new DoStartClientRunner(conn, n);
+                    Thread clientThread = new Thread(runner);
+                    clientThread.start();
+                    //conn.startClient(n);
                 }
             }
         }
@@ -127,5 +144,7 @@ public class PeerProcess {
         //Start Listening for incoming connections if not the last peer
         if(countNumber < peerProcess.getMaxCount() - 1)
             conn.startServer();
+
+        peerProcess.getLogWriter().close();
     }
 }

@@ -15,6 +15,8 @@ public class Config {
     private String fileName = "";
     private int fileSize = 0;
     private int pieceSize = 0;
+    private int numOfPieces = 0;
+    private int lastPieceSize = 0;
 
     public Config(ArrayList list){
         numOfPreferredNeighbors = Integer.valueOf((String) list.get(0));
@@ -23,6 +25,8 @@ public class Config {
         fileName = (String) list.get(3);
         fileSize = Integer.valueOf( (String) list.get(4));
         pieceSize = Integer.valueOf( (String) list.get(5));
+        numOfPieces = (fileSize / pieceSize) + 1;
+        lastPieceSize = fileSize % pieceSize;
     }
 
     public int getNumOfPreferredNeighbors() {
@@ -46,4 +50,8 @@ public class Config {
     }
 
     public int getPieceSize() { return pieceSize; }
+
+    public int getNumOfPieces() { return numOfPieces; }
+
+    public int getLastPieceSize() { return lastPieceSize; }
 }
