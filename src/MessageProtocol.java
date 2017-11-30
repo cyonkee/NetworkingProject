@@ -327,7 +327,7 @@ public class MessageProtocol {
         raf.close();
 
         //get msg values
-        byte[] output = new byte[1 + 4 + 4 + pieceSize];
+        byte[] output = new byte[4 + 1 + 4 + pieceSize];
         String lengthMsg = Integer.toString(1 + 4 + pieceSize);
         lengthMsg = padLeft(lengthMsg,4);
         String type = "7";
