@@ -2,6 +2,7 @@ import java.io.*;
 import java.nio.Buffer;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Created by cyonkee on 10/23/17.
@@ -64,7 +65,7 @@ public class MessageProtocol {
 
         //read in the message type and the payload
         String mLength = new String(lengthMsg);
-        System.out.println("mLength: " + mLength);
+        //System.out.println("mLength: " + mLength);
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
 
@@ -138,9 +139,16 @@ public class MessageProtocol {
 
                 break;
         }
+        receiveMessage();
     }
 
-    public void sendMessage(int type, byte[] payload) throws IOException, ClassNotFoundException {
+    public void sendMessage(int type, byte[] payload) {
+        SendMessageRunner runner = new SendMessageRunner(type, payload, this);
+        Thread sendMessageThread = new Thread(runner);
+        sendMessageThread.start();
+    }
+
+    public void sendMessageImpl(int type, byte[] payload) throws IOException, ClassNotFoundException {
         //handle sending messages
         switch (type) {
             case 0:
@@ -166,10 +174,9 @@ public class MessageProtocol {
                 break;
             case 7:
                 sendPiece(payload);
-                System.out.println("sent piece");
+                //System.out.println("sent piece");
                 break;
         }
-        receiveMessage();
     }
 
     public void sendChoke(boolean choke) throws IOException {
@@ -199,12 +206,12 @@ public class MessageProtocol {
         byte[] output = new byte[5];
         String lengthMsg = "0001";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
-        System.out.print("lengthMsgBytes: ");
+        //System.out.print("lengthMsgBytes: ");
         for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
-            System.out.print(lengthMsgBytes[i]);
+            //System.out.print(lengthMsgBytes[i]);
         }
-        System.out.println("");
+        //System.out.println("");
 
         String type;
         if (interested) {
@@ -285,7 +292,7 @@ public class MessageProtocol {
         //get pieceIndex and size of piece
         String piece = new String(payload);
         int pieceIndex = Integer.parseInt(piece);
-        System.out.println("pieceIndex: "+ pieceIndex);
+        //System.out.println("pieceIndex: "+ pieceIndex);
         int offset = pieceIndex * pieceSize;
         int thisPieceSize;
         if(pieceIndex == numOfPieces - 1)
@@ -305,18 +312,18 @@ public class MessageProtocol {
         byte[] output = new byte[1 + 4 + 4 + thisPieceSize];
         String lengthMsg = Integer.toString(1 + 4 + thisPieceSize);
         lengthMsg = padLeft(lengthMsg,4);
-        System.out.println("lengthMsg: " + lengthMsg);
+        //System.out.println("lengthMsg: " + lengthMsg);
         String type = "7";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
         byte[] typeBytes = type.getBytes();
 
         //msg length
-        System.out.print("msg length: ");
+        //System.out.print("msg length: ");
         for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
-            System.out.print(lengthMsgBytes[i] + " ");
+            //System.out.print(lengthMsgBytes[i] + " ");
         }
-        System.out.println("");
+        //System.out.println("");
 
         //msg type
         output[4] = typeBytes[0];
@@ -469,7 +476,7 @@ public class MessageProtocol {
             for(int i=0; i<numOfPieces; i++){
                 if(!bitfield.get(i)) {
                     indicesOfMissingPieces.add(i);
-                    System.out.print(i + " ");
+                    //System.out.print(i + " ");
                 }
             }
         }
@@ -477,7 +484,7 @@ public class MessageProtocol {
         //Randomly select index from missing
         Random random = new Random();
         int randomIndex = random.nextInt(indicesOfMissingPieces.size());
-        System.out.println("Random Index: " + randomIndex);
+        //System.out.println("Random Index: " + randomIndex);
         System.out.println("indicesOfMissingPieces.size(): " + indicesOfMissingPieces.size());
         return indicesOfMissingPieces.get(randomIndex);
     }
