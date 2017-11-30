@@ -223,10 +223,22 @@ public class MessageProtocol {
     }
 
     public boolean findPieces(byte[] payload) {
+        if (payload.length == 0) {
+            payload = Arrays.copyOf(n.getBitfield().toByteArray(), numOfPieces);
+        }
         for (int i = 0; i<numOfPieces; i++) {
             if (payload[i] == 1 && bitfield.get(i) == false) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public boolean findPiece(byte [] pieceIndex) {
+        String s = new String(pieceIndex);
+        int piece = Integer.valueOf(s);
+        if (bitfield.get(piece) == false) {
+            return true;
         }
         return false;
     }
@@ -397,6 +409,20 @@ public class MessageProtocol {
         int second = now.getSecond();
         String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
         output += "Peer "+peer.getPeerID()+ "received the ‘"+interested+"’ message from "+neighborID+".";
+        logWriter.println(output);
+        logWriter.flush();
+    }
+
+    private void writeReceivedHaveLog(int pieceIndex) {
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month + "/" + day + "/" + year + " " + hour + ":" + minute + ":" + second + ": ";
+        output += "Peer " + peer.getPeerID() + " received the ‘have’ message from " + neighborID + " for the piece " + pieceIndex + ".";
         logWriter.println(output);
         logWriter.flush();
     }
