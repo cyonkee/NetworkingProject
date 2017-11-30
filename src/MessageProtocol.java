@@ -80,8 +80,8 @@ public class MessageProtocol {
         }
 
         //test
-        String s = new String(input);
-        System.out.println(s);
+        //String s = new String(input);
+        //System.out.println(s);
 
         //prepare to send appropriate message for type received
         switch (mType) {
@@ -127,7 +127,10 @@ public class MessageProtocol {
                 updateFile(payload);
                 if (bitfield.cardinality() != numOfPieces) {
                     sendMessage(6, payload);
+                } else {
+                    System.out.println("HAS FULL FILE");
                 }
+
                 break;
         }
     }
@@ -274,6 +277,9 @@ public class MessageProtocol {
         byte[] pieceOfFile = new byte[thisPieceSize];
         raf.readFully(pieceOfFile);
         raf.close();
+        String s = new String(pieceOfFile);
+        if(pieceIndex == numOfPieces - 1)
+            System.out.println("Piece of file: " + s);
 
         //get msg values
         byte[] output = new byte[1 + 4 + 4 + thisPieceSize];
