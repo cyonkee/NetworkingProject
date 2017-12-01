@@ -1,9 +1,6 @@
 import java.io.*;
-import java.nio.Buffer;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.*;
-import java.net.*;
 
 /**
  * Created by cyonkee on 10/23/17.
@@ -12,8 +9,6 @@ public class MessageProtocol {
     private boolean isClient;
     private PeerProcess peer;
     private String neighborID;
-    //private ObjectInputStream in;	//stream read from the socket
-    //private ObjectOutputStream out;    //stream write to the socket
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private PrintWriter logWriter;
@@ -26,7 +21,6 @@ public class MessageProtocol {
     private Config attributes;
     private BitSet bitfield;
 
-    //public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
     public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, BufferedInputStream in, BufferedOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
         this.peer = peer;
@@ -165,7 +159,7 @@ public class MessageProtocol {
                 sendInterested(false);
                 break;
             case 4:
-                //sendHaves(payload);
+                sendHaves(payload);
                 break;
             case 5:
                 sendBitfield();
@@ -254,13 +248,15 @@ public class MessageProtocol {
 
         for (Map.Entry<String, Neighbor> entry : map.entrySet()) {
             String id = entry.getKey();
-            Neighbor neighbor = entry.getValue();
-            if (id != peer.getPeerID()) {
+            //Neighbor neighbor = entry.getValue();
+            Neighbor neighbor = map.get(id);
+            if (id.equals("1002")) {
                 //TODO
                 //Socket s = neighbor.getSocket();
+                BufferedOutputStream bOS = neighbor.getOutputStream();
                 //BufferedOutputStream bOS = new BufferedOutputStream(s.getOutputStream());
-                //bOS.write(output);
-                //bOS.flush();
+                bOS.write(output);
+                bOS.flush();
             }
         }
     }
@@ -289,7 +285,6 @@ public class MessageProtocol {
     public void sendBitfield() throws IOException {
         //Transform bitfield to byte[]
         byte[] pieces = new byte[numOfPieces];
-        //System.out.println("Number of pieces: "+numOfPieces);
         for(int i=0; i<pieces.length; i++){
             if(bitfield.get(i) == false)
                 pieces[i] = 0;
@@ -316,7 +311,6 @@ public class MessageProtocol {
         //msg payload = bitfield
         for(int i=0; i<pieces.length; i++) {
             output[i+5] = pieces[i];
-            //System.out.print(output[i+5]+" ");
         }
 
         System.out.println("sent bitfield");

@@ -30,8 +30,9 @@ public class Client {
 
             HashMap map = peer.getMap();
             Neighbor n = (Neighbor) map.get(neighborID);
-            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
             n.setSocket(socket);
+            n.setOutputStream(out);
+            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
 
             //Testing connections
             System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());

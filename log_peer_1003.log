@@ -1,8 +1,8 @@
-11/30/2017 22:39:54: Peer 1003 makes connection to Peer 1001.
-11/30/2017 22:39:54: Peer 1003 makes connection to Peer 1002.
-11/30/2017 22:39:54: Peer 1003 has downloaded the piece 337 from Peer 1001.
+11/30/2017 23:0:18: Peer 1003 makes connection to Peer 1002.
+11/30/2017 23:0:18: Peer 1003 makes connection to Peer 1001.
+11/30/2017 23:0:18: Peer 1003 has downloaded the piece 1785 from Peer 1001.
 Now the number of pieces it has is 0.
-11/30/2017 22:39:54: Peer 1003 has downloaded the piece 1102 from Peer 1002.
+11/30/2017 23:0:18: Peer 1003 has downloaded the piece 570 from Peer 1002.
 Now the number of pieces it has is 1.
-11/30/2017 22:39:56: Peer 1003 is connected from Peer 1004.
-11/30/2017 22:39:56: Peer 1003received the ‘interested’ message from 1004.
+11/30/2017 23:0:21: Peer 1003 is connected from Peer 1004.
+11/30/2017 23:0:21: Peer 1003received the ‘interested’ message from 1004.

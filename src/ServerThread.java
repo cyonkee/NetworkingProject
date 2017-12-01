@@ -11,8 +11,6 @@ Using an ObjectInputStream and ObjectOutputStream for transferring messages.
  */
 public class ServerThread extends Thread {
     private Socket socket = null;
-    //private ObjectInputStream in;	//stream read from the socket
-    //private ObjectOutputStream out;    //stream write to the socket
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private boolean isClient = false;
@@ -29,10 +27,8 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         try{
-            //out = new ObjectOutputStream(socket.getOutputStream());
             out = new BufferedOutputStream(socket.getOutputStream());
             out.flush();
-            //in = new ObjectInputStream(socket.getInputStream());
             in = new BufferedInputStream(socket.getInputStream());
 
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
@@ -42,8 +38,9 @@ public class ServerThread extends Thread {
 
             HashMap map = peer.getMap();
             Neighbor n = (Neighbor) map.get(neighborID);
-            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
             n.setSocket(socket);
+            n.setOutputStream(out);
+            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
 
             //Testing connections
             System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
