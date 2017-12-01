@@ -61,9 +61,6 @@ public class MessageProtocol {
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
 
-        //test
-        //System.out.println(mLength);
-
         //store type
         in.read(input, 0, length);
         byte[] msgType = new byte[1];
@@ -425,7 +422,7 @@ public class MessageProtocol {
         Neighbor neighbor = map.get(neighborID);
         neighbor.setBitfield(bitfield);
         //System.out.println("neighborID: " + neighborID);
-        map.put(neighborID, neighbor);
+        //map.put(neighborID, neighbor);
     }
 
     private void updateFile(byte[] payload) throws IOException {

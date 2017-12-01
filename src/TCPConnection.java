@@ -26,7 +26,8 @@ public class TCPConnection {
         //SERVER SOCKET
         //keeps listening for new Client connections until the socket is closed
         //Creates ServerThread for each new connection
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Server " + peer.getPeerID() + " listening on port " + port);
             while (listening) {
                 new ServerThread(serverSocket.accept(),peer).start();
@@ -43,8 +44,9 @@ public class TCPConnection {
 
         //CLIENT SOCKET
         //Initiates connection to a server
-        try (Socket clientSocket = new Socket(hostName, port))
+        try
         {
+            Socket clientSocket = new Socket(hostName, port);
             Client client = new Client(clientSocket);
             client.startConnection(peer);
         } catch (UnknownHostException e) {

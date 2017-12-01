@@ -4,6 +4,7 @@
 import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.BitSet;
 import java.util.HashMap;
 
 /*
@@ -40,12 +41,22 @@ public class ServerThread extends Thread {
             Neighbor n = (Neighbor) map.get(neighborID);
             n.setSocket(socket);
             n.setOutputStream(out);
-            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
 
+            //MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
             //Testing connections
-            System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //m.doServerMessage();
 
-            m.doServerMessage();
+            ListenerRunnable listener = new ListenerRunnable("serverlistener", in);
+            listener.start();
+
+            Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
+            BitSet myBitfield = thisPeer.getBitfield();
+            if(myBitfield.cardinality() > 0) {
+                BitfieldRunnable bitfieldSender = new BitfieldRunnable("bitfieldSender", out, peer);
+                bitfieldSender.start();
+            }
+
 
             //socket.close();
         } catch (IOException e) {

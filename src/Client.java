@@ -32,12 +32,21 @@ public class Client {
             Neighbor n = (Neighbor) map.get(neighborID);
             n.setSocket(socket);
             n.setOutputStream(out);
-            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
 
+            // MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
             //Testing connections
-            System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //m.doClientMessage();
 
-            m.doClientMessage();
+            ListenerRunnable listener = new ListenerRunnable("clientlistener", in);
+            listener.start();
+
+            Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
+            BitSet myBitfield = thisPeer.getBitfield();
+            if(myBitfield.cardinality() > 0) {
+                BitfieldRunnable bitfieldSender = new BitfieldRunnable("bitfieldSender", out, peer);
+                bitfieldSender.start();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
