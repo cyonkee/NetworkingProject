@@ -1,2 +1,7 @@
-11/30/2017 19:27:46: Peer 1002 makes connection to Peer 1001.
-11/30/2017 19:27:46: Peer 1002received the ‘interested’ message from 1001.
+11/30/2017 22:39:51: Peer 1002 makes connection to Peer 1001.
+11/30/2017 22:39:51: Peer 1002 has downloaded the piece 1257 from Peer 1001.
+Now the number of pieces it has is 0.
+11/30/2017 22:39:54: Peer 1002 is connected from Peer 1003.
+11/30/2017 22:39:54: Peer 1002received the ‘interested’ message from 1003.
+11/30/2017 22:39:56: Peer 1002 is connected from Peer 1004.
+11/30/2017 22:39:56: Peer 1002received the ‘interested’ message from 1004.

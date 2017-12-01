@@ -3,6 +3,7 @@ import java.nio.Buffer;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.net.*;
 
 /**
  * Created by cyonkee on 10/23/17.
@@ -95,15 +96,16 @@ public class MessageProtocol {
                 sendMessage(6, null);
                 break;
             case "2":
-                System.out.println("received interested");
+                System.out.println("received interested from " + neighborID);
                 writeReceivedInterestedLog("interested");
                 sendMessage(1,null);
                 break;
             case "3":
                 writeReceivedInterestedLog("not interested");
-                System.out.println("received not interested");
+                System.out.println("received not interested from " + neighborID);
                 break;
             case "4":
+                System.out.println("Received have from: " + neighborID);
                 break;
             case "5":
                 //receives bitfield
@@ -129,8 +131,9 @@ public class MessageProtocol {
                 //received piece, so update bitfield and file, send "have" to peers
                 updateFile(payload);
                 updateBitfield(payload);
+                sendMessage(4,payload);
                 if (bitfield.cardinality() != numOfPieces) {
-                    sendMessage(6, payload);
+                    //sendMessage(6, null);
                 } else {
                     System.out.println("HAS FULL FILE");
                 }
@@ -162,6 +165,7 @@ public class MessageProtocol {
                 sendInterested(false);
                 break;
             case 4:
+                //sendHaves(payload);
                 break;
             case 5:
                 sendBitfield();
@@ -187,11 +191,11 @@ public class MessageProtocol {
         String type;
         if (choke) {
             type = "0";
-            System.out.println("sent choke");
+            System.out.println("sent choke to: " + neighborID);
         }
         else {
             type = "1";
-            System.out.println("sent unchoke");
+            System.out.println("sent unchoke to " + neighborID);
         }
         byte[] typeBytes = type.getBytes();
         output[4] = typeBytes[0];
@@ -225,6 +229,40 @@ public class MessageProtocol {
 
         out.write(output);
         out.flush();
+    }
+
+    public void sendHaves(byte[] payload) throws IOException{
+        byte[] output = new byte[9];
+        String lengthMsg = "0005";
+        String type = "4";
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        byte[] typeBytes = type.getBytes();
+        byte[] pieceIndexBytes = new byte[4];
+        for(int i=0; i<4; i++)
+            pieceIndexBytes[i] = payload[i];
+
+        //msg length
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        //msg type
+        output[4] = typeBytes[0];
+
+        //payload (piece that was received)
+        for(int i=0; i<4; i++)
+            output[i+5] = pieceIndexBytes[i];
+
+        for (Map.Entry<String, Neighbor> entry : map.entrySet()) {
+            String id = entry.getKey();
+            Neighbor neighbor = entry.getValue();
+            if (id != peer.getPeerID()) {
+                //TODO
+                //Socket s = neighbor.getSocket();
+                //BufferedOutputStream bOS = new BufferedOutputStream(s.getOutputStream());
+                //bOS.write(output);
+                //bOS.flush();
+            }
+        }
     }
 
     public boolean findPieces(byte[] payload) {
