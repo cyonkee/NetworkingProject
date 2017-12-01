@@ -104,6 +104,9 @@ public class ListenerRunnable implements Runnable {
 
             case "4":
                 //received have, send interested or not
+                System.out.println("received have");
+                HaveHandler haveHandler = new HaveHandler(payload, peer);
+                haveHandler.handle();
                 break;
 
             case "5":
