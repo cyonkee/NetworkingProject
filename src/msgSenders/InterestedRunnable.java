@@ -28,6 +28,11 @@ public class InterestedRunnable implements Runnable {
         myBitfield = (BitSet) thisPeer.getBitfield();
     }
 
+    public void start(){
+        t = new Thread(this, name);
+        t.start();
+    }
+
     @Override
     public void run() {
         try {
@@ -38,11 +43,6 @@ public class InterestedRunnable implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void start(){
-        t = new Thread(this, name);
-        t.start();
     }
 
     public byte[] formInterestedMessage() {

@@ -1,12 +1,16 @@
-package connection;
+package handlers;
 
-import handlers.BitfieldHandler;
-import handlers.InterestedHandler;
-import handlers.NotInterestedHandler;
+import connection.PeerProcess;
+import setup.*;
+import msgSenders.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.*;
 
 /**
  * Created by cyonkee on 12/1/17.
@@ -18,6 +22,7 @@ public class ListenerRunnable implements Runnable {
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private PeerProcess peer;
+    private Config attributes;
     private String neighborID;
 
     public ListenerRunnable(String name, BufferedInputStream in, BufferedOutputStream out, PeerProcess peer, String neighborID){
@@ -26,10 +31,17 @@ public class ListenerRunnable implements Runnable {
         this.out = out;
         this.peer = peer;
         this.neighborID = neighborID;
+        attributes = peer.getAttributes();
+    }
+
+    public void start() {
+        t = new Thread(this, name);
+        t.start();
     }
 
     @Override
     public void run() {
+        startChokeTimer();
         while(true){
             try {
                 if(in.available() != 0) {
@@ -66,10 +78,12 @@ public class ListenerRunnable implements Runnable {
         switch (mType) {
             case "0":
                 //received choke
+                System.out.println("received choke");
                 break;
-                
+
             case "1":
                 //received Unchoke, so send request for piece
+                System.out.println("received unchoke");
                 break;
 
             case "2":
@@ -108,8 +122,37 @@ public class ListenerRunnable implements Runnable {
         }
     }
 
-    public void start() {
-        t = new Thread(this, name);
-        t.start();
+    private void startChokeTimer() {
+        TimerTask task = new TimerTask(){
+            @Override
+            public void run() {
+                chokeOrUnchokePeers();
+            }
+        };
+
+        Timer timer = new Timer("chokeTimer");
+        timer.schedule(task, attributes.getUnchokingInterval() * 1000);
     }
+
+    private void chokeOrUnchokePeers() {
+        HashMap map = peer.getMap();
+        Neighbor neighbor;
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            neighbor = (Neighbor) pair.getValue();
+            //if neighbor peer is interested send unchoke
+            if((pair.getKey() != peer.getPeerID()) && neighbor.getIsInterested()){
+                UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer);
+                unchokeSender.start();
+            }
+            //if neighbor peer is not interested send choke
+            if((pair.getKey() != peer.getPeerID()) && !neighbor.getIsInterested()){
+                ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer);
+                chokeSender.start();
+            }
+        }
+        startChokeTimer();
+    }
+
 }

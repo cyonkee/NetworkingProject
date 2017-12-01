@@ -100,6 +100,13 @@ public class PeerProcess {
         }
     }
 
+    public void incrementDownloads(String neighborID) {
+        if (downloads.get(neighborID) == null)
+            downloads.put(neighborID, 1);
+        else
+            downloads.put(neighborID, downloads.get(neighborID) + 1);
+    }
+
     public String getPeerID(){ return peerID; }
     public Config getAttributes(){ return attributes; }
     public PeersInfo getPeersInfo(){ return peersInfo; }
@@ -108,13 +115,6 @@ public class PeerProcess {
     public int getMaxCount() { return peersInfo.getMaxPeerscount(); }
     public PrintWriter getLogWriter() { return logWriter; }
     public HashMap<String, Integer> getDownloads() { return downloads; }
-
-    public void incrementDownloads(String neighborID) {
-        if (downloads.get(neighborID) == null)
-            downloads.put(neighborID, 1);
-        else
-            downloads.put(neighborID, downloads.get(neighborID) + 1);
-    }
 
     public static void main(String[] args) throws IOException {
         //Start the connection.PeerProcess and parse the files and set bitfields.
