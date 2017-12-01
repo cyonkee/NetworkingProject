@@ -116,10 +116,13 @@ public class ListenerRunnable implements Runnable {
             case "6":
                 //received request, so send piece
                 System.out.println("received request");
+                RequestHandler requestHandler = new RequestHandler(payload, peer);
+                requestHandler.handle(neighborID,out);
                 break;
 
             case "7":
                 //received piece, so update bitfield and file, send "have" to peers
+                System.out.println("received piece");
                 break;
 
         }
