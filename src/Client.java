@@ -9,8 +9,6 @@ import java.lang.*;
  */
 public class Client {
     private Socket socket = null;
-    //private ObjectInputStream in;	//stream read from the socket
-    //private ObjectOutputStream out;    //stream write to the socket
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private boolean isClient = true;
@@ -21,10 +19,8 @@ public class Client {
 
     public void startConnection(PeerProcess peer) {
         try{
-            //out = new ObjectOutputStream(socket.getOutputStream());
             out = new BufferedOutputStream(socket.getOutputStream());
             out.flush();
-            //in = new ObjectInputStream(socket.getInputStream());
             in = new BufferedInputStream(socket.getInputStream());
 
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
