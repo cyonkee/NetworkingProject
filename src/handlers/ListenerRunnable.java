@@ -84,6 +84,8 @@ public class ListenerRunnable implements Runnable {
             case "1":
                 //received Unchoke, so send request for piece
                 System.out.println("received unchoke");
+                UnchokeHandler unchokeHandler = new UnchokeHandler(peer);
+                unchokeHandler.handle(neighborID,out);
                 break;
 
             case "2":
@@ -113,6 +115,7 @@ public class ListenerRunnable implements Runnable {
 
             case "6":
                 //received request, so send piece
+                System.out.println("received request");
                 break;
 
             case "7":
