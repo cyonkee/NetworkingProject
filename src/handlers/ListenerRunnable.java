@@ -123,6 +123,8 @@ public class ListenerRunnable implements Runnable {
             case "7":
                 //received piece, so update bitfield and file, send "have" to peers
                 System.out.println("received piece");
+                PieceHandler pieceHandler = new PieceHandler(payload, peer);
+                pieceHandler.handle(neighborID, out);
                 break;
 
         }
@@ -147,6 +149,7 @@ public class ListenerRunnable implements Runnable {
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             neighbor = (Neighbor) pair.getValue();
+
             //if neighbor peer is interested send unchoke
             if((pair.getKey() != peer.getPeerID()) && neighbor.getIsInterested()){
                 UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer);
