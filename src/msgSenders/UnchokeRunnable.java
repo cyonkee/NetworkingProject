@@ -18,11 +18,13 @@ public class UnchokeRunnable implements Runnable {
     private PeerProcess peer;
     private Config attributes;
     private BitSet myBitfield;
+    private String neighborID;
 
-    public UnchokeRunnable(String name, BufferedOutputStream out, PeerProcess peer){
+    public UnchokeRunnable(String name, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
         this.out = out;
         this.peer = peer;
+        this.neighborID = neighborID;
         attributes = peer.getAttributes();
         Neighbor thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
         myBitfield = (BitSet) thisPeer.getBitfield();
@@ -38,9 +40,11 @@ public class UnchokeRunnable implements Runnable {
         try {
             byte[] output = formUnchokeMessage();
 
+            Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
+            BufferedOutputStream os = neighbor.getOutputStream();
             System.out.println("sent unchoke");
-            out.write(output);
-            out.flush();
+            os.write(output);
+            os.flush();
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -18,11 +18,13 @@ public class ChokeRunnable implements Runnable {
     private PeerProcess peer;
     private Config attributes;
     private BitSet myBitfield;
+    private String neighborID;
 
-    public ChokeRunnable(String name, BufferedOutputStream out, PeerProcess peer){
+    public ChokeRunnable(String name, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
         this.out = out;
         this.peer = peer;
+        this.neighborID = neighborID;
         attributes = peer.getAttributes();
         Neighbor thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
         myBitfield = (BitSet) thisPeer.getBitfield();
@@ -38,9 +40,11 @@ public class ChokeRunnable implements Runnable {
         try {
             byte[] output = formChokeMessage();
 
+            Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
+            BufferedOutputStream os = neighbor.getOutputStream();
             System.out.println("sent choke");
-            out.write(output);
-            out.flush();
+            os.write(output);
+            os.flush();
 
         } catch (IOException e) {
             e.printStackTrace();

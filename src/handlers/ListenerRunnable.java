@@ -150,15 +150,17 @@ public class ListenerRunnable implements Runnable {
             Map.Entry pair = (Map.Entry)it.next();
             neighbor = (Neighbor) pair.getValue();
 
-            //if neighbor peer is interested send unchoke
-            if((pair.getKey() != peer.getPeerID()) && neighbor.getIsInterested()){
-                UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer);
-                unchokeSender.start();
-            }
-            //if neighbor peer is not interested send choke
-            if((pair.getKey() != peer.getPeerID()) && !neighbor.getIsInterested()){
-                ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer);
-                chokeSender.start();
+            if(neighbor.getSocket() != null) {
+                //if neighbor peer is interested send unchoke
+                if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsInterested()) {
+                    UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, (String) pair.getKey());
+                    unchokeSender.start();
+                }
+                //if neighbor peer is not interested send choke
+                if ((!pair.getKey().equals(peer.getPeerID())) && !neighbor.getIsInterested()) {
+                    ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
+                    chokeSender.start();
+                }
             }
         }
         startChokeTimer();
