@@ -1,3 +1,9 @@
+package connection;
+
+import msgSenders.*;
+import setup.*;
+import handlers.*;
+
 import java.net.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,12 +39,12 @@ public class Client {
             n.setSocket(socket);
             n.setOutputStream(out);
 
-            // MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
+            // connection.MessageProtocol m = new connection.MessageProtocol(isClient,peer,neighborID,in,out);
             //Testing connections
-            //System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //System.out.println("Connected as connection.Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
             //m.doClientMessage();
 
-            ListenerRunnable listener = new ListenerRunnable("clientlistener", in);
+            ListenerRunnable listener = new ListenerRunnable("clientlistener", in, out, peer, neighborID);
             listener.start();
 
             Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
@@ -54,7 +60,7 @@ public class Client {
             e.printStackTrace();
         }
     }
-    private void writeClientConnLog(PrintWriter logWriter,PeerProcess peer,String neighborID){
+    private void writeClientConnLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
         LocalDateTime now = LocalDateTime.now();
         int year = now.getYear();
         int month = now.getMonthValue();

@@ -1,7 +1,12 @@
+package msgSenders;
+
+import connection.PeerProcess;
+import setup.Config;
+import setup.Neighbor;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.BitSet;
-
 /**
  * Created by cyonkee on 12/1/17.
  */

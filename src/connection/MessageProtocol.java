@@ -1,3 +1,8 @@
+package connection;
+
+import setup.Config;
+import setup.Neighbor;
+
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -245,7 +250,7 @@ public class MessageProtocol {
 
         for (Map.Entry<String, Neighbor> entry : map.entrySet()) {
             String id = entry.getKey();
-            //Neighbor neighbor = entry.getValue();
+            //setup.Neighbor neighbor = entry.getValue();
             Neighbor neighbor = map.get(id);
             if (id.equals("1002")) {
                 //TODO

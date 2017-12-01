@@ -1,4 +1,9 @@
+package connection;
+
+import handlers.BitfieldHandler;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 
 /**
@@ -9,10 +14,16 @@ public class ListenerRunnable implements Runnable {
     private Thread t;
     private String name;
     private BufferedInputStream in;
+    private BufferedOutputStream out;
+    private PeerProcess peer;
+    private String neighborID;
 
-    public ListenerRunnable(String name, BufferedInputStream in){
+    public ListenerRunnable(String name, BufferedInputStream in, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
         this.in = in;
+        this.out = out;
+        this.peer = peer;
+        this.neighborID = neighborID;
     }
 
     @Override
@@ -59,9 +70,11 @@ public class ListenerRunnable implements Runnable {
                 break;
             case "2":
                 //received interested
+                System.out.println("received interested");
                 break;
             case "3":
                 //received not interested
+                System.out.println("received not interested");
                 break;
             case "4":
                 //received have, send interested or not
@@ -69,6 +82,8 @@ public class ListenerRunnable implements Runnable {
             case "5":
                 //received Bitfield, so check if there are interesting pieces and send not/interested
                 System.out.println("Received Bitfield");
+                BitfieldHandler bitHandler = new BitfieldHandler(payload, peer);
+                bitHandler.handle(neighborID,out);
                 break;
             case "6":
                 //received request, so send piece

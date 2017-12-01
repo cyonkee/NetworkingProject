@@ -1,3 +1,7 @@
+package connection;
+
+import setup.Neighbor;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -24,8 +28,8 @@ public class TCPConnection {
         int port = thisPeer.getPort();
 
         //SERVER SOCKET
-        //keeps listening for new Client connections until the socket is closed
-        //Creates ServerThread for each new connection
+        //keeps listening for new connection.Client connections until the socket is closed
+        //Creates connection.ServerThread for each new connection
         try {
             ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Server " + peer.getPeerID() + " listening on port " + port);

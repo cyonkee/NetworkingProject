@@ -1,4 +1,4 @@
-/**
+package setup; /**
  * Created by cyonkee on 10/15/17.
  */
 
@@ -8,7 +8,7 @@ import java.net.*;
 
 /*
 This is the object that holds info about each peer from
-parsing the PeersInfo.cfg.
+parsing the setup.PeersInfo.cfg.
  */
 public class Neighbor {
     private String hostname;

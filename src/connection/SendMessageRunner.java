@@ -1,3 +1,5 @@
+package connection;
+
 import java.io.IOException;
 
 public class SendMessageRunner implements Runnable {
