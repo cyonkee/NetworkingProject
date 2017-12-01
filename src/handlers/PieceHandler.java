@@ -1,12 +1,16 @@
 package handlers;
 
 import connection.PeerProcess;
+import msgSenders.HaveRunnable;
 import setup.Config;
 import setup.Neighbor;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by cyonkee on 12/1/17.
@@ -27,8 +31,20 @@ public class PieceHandler {
     public void handle(String neighborID, BufferedOutputStream out){
         updateFile();
         updateBitfield();
-//        HaveRunnable haveSender = new HaveRunnable("haveSender", out, peer, neighborID, payload);
-//        haveSender.start();
+
+        //send to all peers with sockets open
+        HashMap map = peer.getMap();
+        Neighbor neighbor;
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            neighbor = (Neighbor) pair.getValue();
+
+            if((neighbor.getSocket() != null) && (!pair.getKey().equals(peer.getPeerID()))) {
+                HaveRunnable haveSender = new HaveRunnable("haveSender", out, peer,  (String) pair.getKey(), payload);
+                haveSender.start();
+            }
+        }
     }
 
     private void updateFile() {

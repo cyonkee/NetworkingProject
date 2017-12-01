@@ -253,10 +253,7 @@ public class MessageProtocol {
             //setup.Neighbor neighbor = entry.getValue();
             Neighbor neighbor = map.get(id);
             if (id.equals("1002")) {
-                //TODO
-                //Socket s = neighbor.getSocket();
                 BufferedOutputStream bOS = neighbor.getOutputStream();
-                //BufferedOutputStream bOS = new BufferedOutputStream(s.getOutputStream());
                 bOS.write(output);
                 bOS.flush();
             }
@@ -384,7 +381,6 @@ public class MessageProtocol {
         String lengthMsg = "0005";
         String type = "6";
         String pieceIndex = Integer.toString(randomIndex);
-        //System.out.println("Sent request to " + neighborID + " for piece " + pieceIndex);
         pieceIndex = padLeft(pieceIndex,4);
         byte[] lengthMsgBytes = lengthMsg.getBytes();
         byte[] typeBytes = type.getBytes();
