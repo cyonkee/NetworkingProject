@@ -18,6 +18,7 @@ public class Neighbor {
     private int peerCount;
     private Socket socket;
     private BufferedOutputStream out;
+    private boolean isInterested = false;
 
     public Neighbor(String hostname, String port, String hasFile, int peerCount){
         this.hostname = hostname;
@@ -28,6 +29,7 @@ public class Neighbor {
 
     public void setSocket(Socket socket){ this.socket = socket; }
     public void setOutputStream(BufferedOutputStream out){ this.out = out; }
+    public void setIsInterested(boolean isInterested){ this.isInterested = isInterested; }
     public void setBitfield(BitSet bitfield) {
         this.bitfield = bitfield;
     }
@@ -44,4 +46,5 @@ public class Neighbor {
     }
     public Socket getSocket(){ return socket; }
     public BufferedOutputStream getOutputStream(){ return out; }
+    public boolean getIsInterested(){ return isInterested; }
 }

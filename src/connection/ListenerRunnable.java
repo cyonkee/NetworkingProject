@@ -1,6 +1,8 @@
 package connection;
 
 import handlers.BitfieldHandler;
+import handlers.InterestedHandler;
+import handlers.NotInterestedHandler;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -65,32 +67,44 @@ public class ListenerRunnable implements Runnable {
             case "0":
                 //received choke
                 break;
+                
             case "1":
                 //received Unchoke, so send request for piece
                 break;
+
             case "2":
                 //received interested
                 System.out.println("received interested");
+                InterestedHandler interestedHandler = new InterestedHandler(peer);
+                interestedHandler.handle(neighborID);
                 break;
+
             case "3":
                 //received not interested
                 System.out.println("received not interested");
+                NotInterestedHandler notInterestedHandler = new NotInterestedHandler(peer);
+                notInterestedHandler.handle(neighborID);
                 break;
+
             case "4":
                 //received have, send interested or not
                 break;
+
             case "5":
                 //received Bitfield, so check if there are interesting pieces and send not/interested
                 System.out.println("Received Bitfield");
                 BitfieldHandler bitHandler = new BitfieldHandler(payload, peer);
                 bitHandler.handle(neighborID,out);
                 break;
+
             case "6":
                 //received request, so send piece
                 break;
+
             case "7":
                 //received piece, so update bitfield and file, send "have" to peers
                 break;
+
         }
     }
 
