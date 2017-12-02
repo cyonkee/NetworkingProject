@@ -48,12 +48,10 @@ public class PieceHandler {
             }
         }
 
-//        if (cycleNotOver) {
         decideWhatToDoWithPieceSender(neighborID, out);
-//
+
 //            HashMap<String, Neighbor> neighbors = peer.getMap();
 //            sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
-//        }
     }
 
     private void updateFile() {
