@@ -75,6 +75,8 @@ public class RequestRunnable implements Runnable {
         for(int i=0; i<4; i++)
             output[i+5] = pieceIndexBytes[i];
 
+        peer.incrementDownloads(neighborID);
+
         return output;
     }
 

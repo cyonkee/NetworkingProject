@@ -97,8 +97,6 @@ public class PieceRunnable implements Runnable {
         for(int i=0; i < thisPieceSize; i++)
             output[i+9] = pieceOfFile[i];
 
-        peer.incrementDownloads(neighborID);
-
         return output;
     }
 

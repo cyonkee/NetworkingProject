@@ -7,6 +7,7 @@ import setup.Neighbor;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.*;
 
 /**
  * Created by cyonkee on 12/1/17.
@@ -40,11 +41,52 @@ public class UnchokeRunnable implements Runnable {
         try {
             byte[] output = formUnchokeMessage();
 
-            Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
+            List<Integer> list = new ArrayList<>();
+            ArrayList ids = peer.getNeighborIDs();
+            HashMap map = peer.getMap();
+            for(int i = 0; i<ids.size(); i++){
+                Neighbor n = (Neighbor) map.get(ids.get(i));
+                if (n.getSocket() != null && n.getIsInterested()) {
+                    list.add(Integer.valueOf((String) ids.get(i)));
+                }
+            }
+            for(int i = 0; i<list.size(); i++){
+                System.out.println(list.get(i));
+                System.out.println("Size: "+ list.size());
+            }
+
+            if (list.size() <= peer.getAttributes().getNumOfPreferredNeighbors()) {
+                for (int i = 0; i<list.size(); i++) {
+                    Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(i)));
+                    if (neighbor == null )System.out.println("null");
+                    BufferedOutputStream os = neighbor.getOutputStream();
+                    System.out.println("sent unchoke");
+                    os.write(output);
+                    os.flush();
+                }
+            }
+            else {
+                Collections.sort(list, Collections.reverseOrder());
+                List<Integer> top = list.subList(0, peer.getAttributes().getNumOfPreferredNeighbors());
+                System.out.println("top 5 = ");
+                for (int i = 0; i< list.size(); i++) {
+                    System.out.println(top.get(i));
+                }
+                for (int i = 0; i<top.size(); i++) {
+                    Neighbor neighbor = (Neighbor) peer.getMap().get(top.get(i));
+                    BufferedOutputStream os = neighbor.getOutputStream();
+                    System.out.println("sent unchoke");
+                    os.write(output);
+                    os.flush();
+                }
+            }
+
+
+            /*Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
             BufferedOutputStream os = neighbor.getOutputStream();
             System.out.println("sent unchoke");
             os.write(output);
-            os.flush();
+            os.flush();*/
 
         } catch (IOException e) {
             e.printStackTrace();
