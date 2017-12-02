@@ -1,13 +1,11 @@
 package msgSenders;
 
-import com.sun.org.apache.xpath.internal.operations.Neg;
 import connection.PeerProcess;
 import setup.Config;
 import setup.Neighbor;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.*;
 
 /**
@@ -52,7 +50,9 @@ public class UnchokeRunnable implements Runnable {
             System.out.println(list.get(i));
             System.out.println("Size: " + list.size());
         }
-        sendUnchokeMessages(list, map, output);
+        List chosenPeers = determineUnchokePeers(list, map, output);
+        sendChokeMessages(chosenPeers,list);
+
     }
 
     private byte[] formUnchokeMessage() {
@@ -78,75 +78,131 @@ public class UnchokeRunnable implements Runnable {
         }
     }
 
-    private void sendUnchokeMessages(List list, HashMap map, byte[] output){
+    private List determineUnchokePeers(List list, HashMap map, byte[] output){
         try {
+            //if number of interested is less than preferred neighbors limit
             if (list.size() <= peer.getAttributes().getNumOfPreferredNeighbors()) {
-                for (int i = 0; i < list.size(); i++) {
-                    Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(i)));
-                    if (neighbor.getIsChoked()) {
-                        BufferedOutputStream os = neighbor.getOutputStream();
-                        System.out.println("sent unchoke");
-                        synchronized (this) {
-                            os.write(output);
-                            os.flush();
-                        }
-                    }
-                }
+                sendUnchokes(list, map, output);
+                return list;
             }
             else {
                 //If the peer has the full file
                 if (myBitfield.cardinality() == attributes.getNumOfPieces()) {
-                    for (int i = 0; i < attributes.getNumOfPreferredNeighbors(); i++) {
-                        Random random = new Random();
-                        int randomIndex = random.nextInt(list.size());
-                        Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(randomIndex)));
-                        if (neighbor.getIsChoked()) {
-                            BufferedOutputStream os = neighbor.getOutputStream();
-                            System.out.println("sent unchoke");
-                            synchronized (this) {
-                                os.write(output);
-                                os.flush();
-                            }
-                        }
-                    }
+                    return sendRandomUnchokes(list, map, output);
                 }
                 else {
-                    //MISSING: Order the "list" of interested peers by their download rate
-                    //Get the top ids:
-                    List top = list.subList(0, peer.getAttributes().getNumOfPreferredNeighbors());
+                    //get top download rates
+                    list = bubbleSortByRates(list);
+                    List top = list.subList(0, attributes.getNumOfPreferredNeighbors());
                     System.out.println("top 5 = ");
                     for (int i = 0; i < top.size(); i++) {
                         System.out.println(top.get(i));
                     }
-                    for (int i = 0; i < top.size(); i++) {
-                        Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(i)));
-                        if (neighbor.getIsChoked()) {
-                            BufferedOutputStream os = neighbor.getOutputStream();
-                            System.out.println("sent unchoke");
-                            synchronized (this) {
-                                os.write(output);
-                                os.flush();
-                            }
-                        }
-                    }
+                    sendUnchokesToPreferreds(list, map, output, top);
+                    return top;
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    /*public void sendChokeMessages(List chosen, List list) {
-        Neighbor n;
-        for (int i = 0; i<chosen.size(); i++) {
-            n = (Neighbor) chosen.get(i);
-            for (int j = 0; j< list.size(); j++) {
-                if (!chosen.get(i).equals(list.get(i)) && list.get(i).)
-                    ChokeRunnable chokeSender = new ChokeRunnable("chokeSender",out,peer,String.valueOf(list.get(randomIndex)));
-                    chokeSender.start();
+    private List bubbleSortByRates(List list) {
+        HashMap dmap = peer.getDownloads();
+        int temp = 0;
+        for(int i=0; i < list.size(); i++){
+            for(int j=1; j < list.size() - i; j++){
+                String peerID1 = Integer.toString((int) list.get(j-1));
+                String peerID2 = Integer.toString((int) list.get(j));
+                int rate1 = (int) dmap.get(peerID1);
+                int rate2 = (int) dmap.get(peerID2);
+                if(rate1 < rate2){
+                    temp = rate1;
+                    list.set(j-1,rate2);
+                    list.set(j,temp);
+                }
             }
         }
-    }*/
+        return list;
+    }
+
+    private void sendUnchokesToPreferreds(List list, HashMap map, byte[] output, List top) throws IOException {
+        for (int i = 0; i < top.size(); i++) {
+            Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(i)));
+            if (neighbor.getIsChoked()) {
+                BufferedOutputStream os = neighbor.getOutputStream();
+                System.out.println("sent unchoke");
+                synchronized (this) {
+                    os.write(output);
+                    os.flush();
+                }
+            }
+        }
+    }
+
+    private List sendRandomUnchokes(List list, HashMap map, byte[] output) throws IOException {
+        ArrayList<Integer> chosenPeers = new ArrayList();
+        for (int i = 0; i < attributes.getNumOfPreferredNeighbors(); i++) {
+            Random random = new Random();
+            int randomIndex = random.nextInt(list.size());
+            chosenPeers.add((int) list.get(randomIndex));
+            Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(randomIndex)));
+            if (neighbor.getIsChoked()) {
+                BufferedOutputStream os = neighbor.getOutputStream();
+                System.out.println("sent unchoke");
+                synchronized (this) {
+                    os.write(output);
+                    os.flush();
+                }
+            }
+        }
+        return chosenPeers;
+    }
+
+    private void sendUnchokes(List list, HashMap map, byte[] output) throws IOException {
+        for (int i = 0; i < list.size(); i++) {
+            Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(i)));
+            if (neighbor.getIsChoked()) {
+                BufferedOutputStream os = neighbor.getOutputStream();
+                System.out.println("sent unchoke");
+                synchronized (this) {
+                    os.write(output);
+                    os.flush();
+                }
+            }
+        }
+    }
+
+    public void sendChokeMessages(List chosen, List list) {
+        Neighbor neighbor;
+        boolean chosenPeer = false;
+        for(int i=0; i<list.size(); i++){
+            chosenPeer = isChosenPeer(chosen, list, chosenPeer, i);
+            ChokeIfUnchosenAndUnchoked(list, chosenPeer, i);
+            chosenPeer = false;
+        }
+    }
+
+    private void ChokeIfUnchosenAndUnchoked(List list, boolean chosenPeer, int i) {
+        Neighbor neighbor;
+        if(!chosenPeer){
+            String peerID = Integer.toString((int) list.get(i));
+            neighbor = (Neighbor) peer.getMap().get(peerID);
+            if(!neighbor.getIsChoked()){
+                ChokeRunnable chokeSender = new ChokeRunnable("chokeSender",out,peer,peerID);
+            }
+        }
+    }
+
+    private boolean isChosenPeer(List chosen, List list, boolean chosenPeer, int i) {
+        for(int j=0; j<chosen.size(); j++){
+            if(list.get(i).equals(chosen.get(j))){
+                chosenPeer = true;
+                break;
+            }
+        }
+        return chosenPeer;
+    }
 
 }

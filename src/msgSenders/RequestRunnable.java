@@ -40,8 +40,8 @@ public class RequestRunnable implements Runnable {
     @Override
     public void run() {
         try {
+            peer.incrementDownloads(neighborID);
             byte[] output = formRequestMessage();
-
             System.out.println("sent request");
 
             synchronized (this) {

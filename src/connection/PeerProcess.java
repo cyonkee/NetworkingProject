@@ -117,6 +117,12 @@ public class PeerProcess {
             downloads.put(neighborID, downloads.get(neighborID) + 1);
     }
 
+    public void clearDownloadRate(String neighborID){
+        if(downloads.get(neighborID) != null){
+            downloads.put(neighborID,0);
+        }
+    }
+
     public String getPeerID(){ return peerID; }
     public Config getAttributes(){ return attributes; }
     public PeersInfo getPeersInfo(){ return peersInfo; }

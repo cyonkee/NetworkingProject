@@ -22,6 +22,7 @@ public class UnchokeHandler {
     }
 
     public void handle(String neighborID, BufferedOutputStream out){
+        peer.clearDownloadRate(neighborID);
         RequestRunnable requestSender = new RequestRunnable("requestSender", out, peer, neighborID);
         requestSender.start();
     }
