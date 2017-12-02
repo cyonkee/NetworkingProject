@@ -39,7 +39,8 @@ public class PeerProcess {
         configurePeer();
         parsePeersFile();
         setBitfields();
-        this.downloads = new HashMap<String, Integer>();
+        this.downloads = new HashMap<>();
+        initializeMap();
     }
 
     private void configurePeer(){
@@ -100,11 +101,26 @@ public class PeerProcess {
         }
     }
 
+    private void initializeMap() {
+        int i=0;
+        Iterator it = neighborIDs.iterator();
+        for(;it.hasNext();it.next()) {
+            downloads.put((String) neighborIDs.get(i), 0);
+            i++;
+        }
+    }
+
     public void incrementDownloads(String neighborID) {
         if (downloads.get(neighborID) == null)
             downloads.put(neighborID, 1);
         else
             downloads.put(neighborID, downloads.get(neighborID) + 1);
+    }
+
+    public void clearDownloadRate(String neighborID){
+        if(downloads.get(neighborID) != null){
+            downloads.put(neighborID,0);
+        }
     }
 
     public String getPeerID(){ return peerID; }
@@ -137,10 +153,10 @@ public class PeerProcess {
                 String id = (String) it.next();
                 Neighbor n = (Neighbor) map.get(id);
                 if(countNumber > n.getPeerCount()){
-                    DoStartClientRunner runner = new DoStartClientRunner(conn, n);
-                    Thread clientThread = new Thread(runner);
-                    clientThread.start();
-                    //conn.startClient(n);
+//                    DoStartClientRunner runner = new DoStartClientRunner(conn, n);
+//                    Thread clientThread = new Thread(runner);
+//                    clientThread.start();
+                    conn.startClient(n);
                 }
             }
         }

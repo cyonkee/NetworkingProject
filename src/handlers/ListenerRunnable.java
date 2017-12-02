@@ -1,5 +1,6 @@
 package handlers;
 
+import connection.Helper;
 import connection.PeerProcess;
 import msgSenders.ChokeRunnable;
 import msgSenders.UnchokeRunnable;
@@ -9,6 +10,7 @@ import setup.Neighbor;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -190,6 +192,9 @@ public class ListenerRunnable implements Runnable {
 
     private void optimisticallyUnchokeNeighbor() {
         HashMap map = peer.getMap();
+
+        Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
+
         Neighbor neighbor;
         ArrayList<String> potentialOptimisticallyUnchoked = new ArrayList<String>();
         Iterator it = map.entrySet().iterator();
@@ -202,10 +207,10 @@ public class ListenerRunnable implements Runnable {
                     potentialOptimisticallyUnchoked.add((String) pair.getKey());
                 } else if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsOptimisticallyUnchoked()) {
                     neighbor.setIsOptimisticallyUnchoked(false);
-//                    if (!neighborIsPreferredNeighbor()) {
-//                        ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
-//                        chokeSender.start();
-//                    } 
+                    if (!thisPeer.getChosenPeers().contains(Integer.parseInt((String) pair.getKey()))) {
+                        ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
+                        chokeSender.start();
+                    }
                 }
             }
         }
@@ -218,8 +223,18 @@ public class ListenerRunnable implements Runnable {
         chosenOne.setIsOptimisticallyUnchoked(true);
         UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, chosenOneID);
         unchokeSender.start();
+        writeChangedOptimisticallyUnchokedLog(peer.getLogWriter(), peer, chosenOneID);
 
         startOptimisticallyUnchokeTimer();
+    }
+
+    private void writeChangedOptimisticallyUnchokedLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
+        output += "Peer " + peer.getPeerID() + " has the optimistically unchoked neighbor " + neighborID + ".";
+        logWriter.println(output);
+        logWriter.flush();
     }
 
 }

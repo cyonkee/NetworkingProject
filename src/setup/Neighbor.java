@@ -21,6 +21,7 @@ public class Neighbor {
     private boolean isInterested = false;
     private boolean isChoked = true;
     private boolean isOptimisticallyUnchoked = false;
+    private List<Integer> chosenPeers = new ArrayList<>();
 
     public Neighbor(String hostname, String port, String hasFile, int peerCount){
         this.hostname = hostname;
@@ -32,6 +33,7 @@ public class Neighbor {
     public void setSocket(Socket socket){ this.socket = socket; }
     public void setOutputStream(BufferedOutputStream out){ this.out = out; }
     public void setIsInterested(boolean isInterested){ this.isInterested = isInterested; }
+    public void setChosenPeers(List chosenPeers){ this.chosenPeers = chosenPeers; }
     public void setIsChoked(boolean isChoked){ this.isChoked = isChoked; }
     public void setIsOptimisticallyUnchoked(boolean isOptimisticallyUnchoked) { this.isOptimisticallyUnchoked = isOptimisticallyUnchoked; }
     public void setBitfield(BitSet bitfield) {
@@ -53,4 +55,5 @@ public class Neighbor {
     public boolean getIsInterested(){ return isInterested; }
     public boolean getIsChoked(){ return isChoked; }
     public boolean getIsOptimisticallyUnchoked() { return isOptimisticallyUnchoked; }
+    public List getChosenPeers(){ return chosenPeers; }
 }
