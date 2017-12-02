@@ -13,28 +13,26 @@ import java.time.LocalDateTime;
 /**
  * Created by cyonkee on 12/1/17.
  */
-public class UnchokeHandler {
+public class ChokeHandler {
     private PeerProcess peer;
     private Config attributes;
     private Neighbor thisPeer;
 
-    public UnchokeHandler(PeerProcess peer){
+    public ChokeHandler(PeerProcess peer){
         this.peer = peer;
         attributes = peer.getAttributes();
         thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
     }
 
     public void handle(String neighborID, BufferedOutputStream out){
-        writeReceivedUnchokeLog(peer.getLogWriter(), peer, neighborID);
-        RequestRunnable requestSender = new RequestRunnable("requestSender", out, peer, neighborID);
-        requestSender.start();
+        writeReceivedChokeLog(peer.getLogWriter(), peer, neighborID);
     }
 
-    private void writeReceivedUnchokeLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
+    private void writeReceivedChokeLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
         String output;
         Helper helper = new Helper();
         output = helper.getCurrentTime();
-        output += "Peer " + peer.getPeerID() + " is unchoked by " + neighborID + ".";
+        output += "Peer " + peer.getPeerID() + " is choked by " + neighborID + ".";
         logWriter.println(output);
         logWriter.flush();
     }

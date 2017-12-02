@@ -1,5 +1,6 @@
 package handlers;
 
+import connection.Helper;
 import connection.PeerProcess;
 import msgSenders.HaveRunnable;
 import msgSenders.NotInterestedRunnable;
@@ -9,6 +10,7 @@ import setup.Neighbor;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +35,10 @@ public class PieceHandler {
     public void handle(String neighborID, BufferedOutputStream out){
         updateFile();
         updateBitfield();
+        writeDownloadedPieceLog(peer.getLogWriter(), peer, neighborID, getPieceIndex(), getNumOfPieces());
+        if (thisPeer.getBitfield().cardinality() == peer.getAttributes().getNumOfPieces()) {
+            writeDownloadedCompleteFileLog(peer.getLogWriter(), peer);
+        }
 
         //send to all peers with sockets open
         HashMap map = peer.getMap();
@@ -54,15 +60,26 @@ public class PieceHandler {
         sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
     }
 
-    private void updateFile() {
-        //get piece index
+    private int getPieceIndex() {
         byte[] pieceIndex = new byte[4];
         for(int i=0; i<4; i++)
             pieceIndex[i] = payload[i];
-
-        //get offset
         String index = new String(pieceIndex);
-        int piece = Integer.parseInt(index);
+        return Integer.parseInt(index);
+    }
+
+    private int getNumOfPieces() {
+        int numOfPieces = 0;
+        for (int i = 0; i < peer.getAttributes().getNumOfPieces(); i++) {
+            if (thisPeer.getBitfield().get(i) == true)
+                numOfPieces++;
+        }
+        return numOfPieces;
+    }
+
+    private void updateFile() {
+        //get offset
+        int piece = getPieceIndex();
         int offset = piece * attributes.getPieceSize();
 
         //get bytes of file
@@ -80,10 +97,6 @@ public class PieceHandler {
         } catch(IOException e){
             e.printStackTrace();
         }
-
-//        writeDownloadPieceLog(piece);
-//        if(bitfield.cardinality() == numOfPieces)
-//            writeFullFileDownloadLog();
     }
 
     private void updateBitfield() {
@@ -149,5 +162,23 @@ public class PieceHandler {
             }
             return false;
         }
+    }
+
+    private void writeDownloadedPieceLog(PrintWriter logWriter, PeerProcess peer, String neighborID, int piece, int numOfPieces){
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
+        output += "Peer " + peer.getPeerID() + " has downloaded the piece " + piece + " from " + neighborID + ". Now the number of pieces it has is " + numOfPieces + ".";
+        logWriter.println(output);
+        logWriter.flush();
+    }
+
+    private void writeDownloadedCompleteFileLog(PrintWriter logWriter, PeerProcess peer) {
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
+        output += "Peer " + peer.getPeerID() + " has downloaded the complete file.";
+        logWriter.println(output);
+        logWriter.flush();
     }
 }
