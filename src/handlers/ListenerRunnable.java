@@ -1,10 +1,7 @@
 package handlers;
 
 import connection.PeerProcess;
-import msgSenders.ChokeRunnable;
-import msgSenders.UnchokeRunnable;
 import setup.Config;
-import setup.Neighbor;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -152,27 +149,30 @@ public class ListenerRunnable implements Runnable {
     }
 
     private void chokeOrUnchokePeers() {
-        HashMap map = peer.getMap();
-        Neighbor neighbor;
-        Iterator it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            neighbor = (Neighbor) pair.getValue();
-
-            if(neighbor.getSocket() != null) {
-                //if neighbor peer is interested send unchoke
-                if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsInterested()) {
-                    UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, (String) pair.getKey());
-                    unchokeSender.start();
-                }
-                //if neighbor peer is not interested send choke
-                if ((!pair.getKey().equals(peer.getPeerID())) && !neighbor.getIsInterested()) {
-                    ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
-                    chokeSender.start();
-                }
-            }
-        }
+//        HashMap map = peer.getMap();
+//        Neighbor neighbor;
+//        Iterator it = map.entrySet().iterator();
+//        while (it.hasNext()) {
+//            Map.Entry pair = (Map.Entry)it.next();
+//            neighbor = (Neighbor) pair.getValue();
+//
+//            if(neighbor.getSocket() != null) {
+//                //if neighbor peer is interested send unchoke
+//                if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsInterested()) {
+//                    UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, (String) pair.getKey());
+//                    unchokeSender.start();
+//                }
+//                //if neighbor peer is not interested send choke
+//                if ((!pair.getKey().equals(peer.getPeerID())) && !neighbor.getIsInterested()) {
+//                    ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
+//                    chokeSender.start();
+//                }
+//            }
+//        }
+        PreferredPeers preferredPeers = new PreferredPeers(out,peer,neighborID);
+        preferredPeers.handle();
         startChokeTimer();
+
     }
 
 }
