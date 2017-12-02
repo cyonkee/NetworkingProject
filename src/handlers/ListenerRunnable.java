@@ -141,6 +141,7 @@ public class ListenerRunnable implements Runnable {
             }
         };
 
+
         Timer timer = new Timer("chokeTimer");
         timer.schedule(task, attributes.getUnchokingInterval() * 1000);
     }
