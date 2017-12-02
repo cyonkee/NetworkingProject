@@ -61,15 +61,10 @@ public class Client {
         }
     }
     private void writeClientConnLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
-        LocalDateTime now = LocalDateTime.now();
-        int year = now.getYear();
-        int month = now.getMonthValue();
-        int day = now.getDayOfMonth();
-        int hour = now.getHour();
-        int minute = now.getMinute();
-        int second = now.getSecond();
-        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
-        output += "Peer "+peer.getPeerID()+" makes connection to Peer "+neighborID+".";
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
+        output += "Peer " + peer.getPeerID() + " makes a connection to Peer " + neighborID + ".";
         logWriter.println(output);
         logWriter.flush();
     }

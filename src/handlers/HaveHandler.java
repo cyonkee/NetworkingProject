@@ -1,5 +1,6 @@
 package handlers;
 
+import connection.Helper;
 import connection.PeerProcess;
 import msgSenders.InterestedRunnable;
 import msgSenders.NotInterestedRunnable;
@@ -7,6 +8,7 @@ import setup.Config;
 import setup.Neighbor;
 
 import java.io.BufferedOutputStream;
+import java.io.PrintWriter;
 import java.util.BitSet;
 
 /**
@@ -26,6 +28,7 @@ public class HaveHandler {
     }
 
     public void handle(String neighborID, BufferedOutputStream out){
+
         updateNeighborBitfield(neighborID);
         boolean interested = findPiece();
         if (interested) {
@@ -45,6 +48,7 @@ public class HaveHandler {
             String s = new String(payload);
             int piece = Integer.valueOf(s);
             neighborBitfield.set(piece);
+            writeReceivedHaveLog(peer.getLogWriter(), peer, neighborID, piece);
         }
     }
 
@@ -57,6 +61,15 @@ public class HaveHandler {
             }
             return false;
         }
+    }
+
+    private void writeReceivedHaveLog(PrintWriter logWriter, PeerProcess peer, String neighborID, int piece){
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
+        output += "Peer " + peer.getPeerID() + " received the 'have' message from " + neighborID + " for the piece " + piece + ".";
+        logWriter.println(output);
+        logWriter.flush();
     }
 
 }

@@ -70,14 +70,9 @@ public class ServerThread extends Thread {
     }
 
     private void writeServerConnLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
-        LocalDateTime now = LocalDateTime.now();
-        int year = now.getYear();
-        int month = now.getMonthValue();
-        int day = now.getDayOfMonth();
-        int hour = now.getHour();
-        int minute = now.getMinute();
-        int second = now.getSecond();
-        String output = month+"/"+day+"/"+year+" "+hour+":"+minute+":"+second+": ";
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
         output += "Peer "+peer.getPeerID()+" is connected from Peer "+neighborID+".";
         logWriter.println(output);
         logWriter.flush();

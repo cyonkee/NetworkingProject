@@ -83,6 +83,8 @@ public class ListenerRunnable implements Runnable {
             case "0":
                 //received choke
                 System.out.println("received choke");
+                ChokeHandler chokeHandler = new ChokeHandler(peer);
+                chokeHandler.handle(neighborID,out);
                 break;
 
             case "1":
