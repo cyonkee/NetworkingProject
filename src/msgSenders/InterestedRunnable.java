@@ -38,8 +38,11 @@ public class InterestedRunnable implements Runnable {
         try {
             byte[] output = formInterestedMessage();
 
-            out.write(output);
-            out.flush();
+            System.out.println("sent interested");
+            synchronized (this) {
+                out.write(output);
+                out.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

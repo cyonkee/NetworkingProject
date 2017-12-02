@@ -44,8 +44,10 @@ public class PieceRunnable implements Runnable {
             byte[] output = formPieceMessage();
 
             System.out.println("sent piece");
-            out.write(output);
-            out.flush();
+            synchronized (this) {
+                out.write(output);
+                out.flush();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -66,10 +68,12 @@ public class PieceRunnable implements Runnable {
         //get piece of file. If last piece, the byte[] array is smaller.
         byte[] pieceOfFile = new byte[thisPieceSize];
         try {
-            RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + attributes.getFileName(), "rw");
-            raf.seek(offset);
-            raf.readFully(pieceOfFile);
-            raf.close();
+            synchronized (this) {
+                RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + attributes.getFileName(), "rw");
+                raf.seek(offset);
+                raf.readFully(pieceOfFile);
+                raf.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

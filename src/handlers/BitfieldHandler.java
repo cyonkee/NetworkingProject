@@ -39,26 +39,30 @@ public class BitfieldHandler {
     }
 
     private void updateNeighborBitfield(String neighborID) {
-        int numOfPieces = attributes.getNumOfPieces();
-        BitSet bitfield = new BitSet(numOfPieces);
-        for(int i=0; i<numOfPieces; i++) {
-            if (payload[i] == 1)
-                bitfield.set(i);
+        synchronized (this) {
+            int numOfPieces = attributes.getNumOfPieces();
+            BitSet bitfield = new BitSet(numOfPieces);
+            for (int i = 0; i < numOfPieces; i++) {
+                if (payload[i] == 1)
+                    bitfield.set(i);
+            }
+            Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
+            neighbor.setBitfield(bitfield);
         }
-        Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
-        neighbor.setBitfield(bitfield);
     }
 
     private boolean findPieces(byte[] payload) {
-        int numOfPieces = attributes.getNumOfPieces();
-        if (payload.length == 0) {
-            payload = Arrays.copyOf(thisPeer.getBitfield().toByteArray(), numOfPieces);
-        }
-        for (int i = 0; i<numOfPieces; i++) {
-            if (payload[i] == 1 && thisPeer.getBitfield().get(i) == false) {
-                return true;
+        synchronized (this) {
+            int numOfPieces = attributes.getNumOfPieces();
+            if (payload.length == 0) {
+                payload = Arrays.copyOf(thisPeer.getBitfield().toByteArray(), numOfPieces);
             }
+            for (int i = 0; i < numOfPieces; i++) {
+                if (payload[i] == 1 && thisPeer.getBitfield().get(i) == false) {
+                    return true;
+                }
+            }
+            return false;
         }
-        return false;
     }
 }

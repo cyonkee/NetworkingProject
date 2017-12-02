@@ -38,8 +38,10 @@ public class BitfieldRunnable implements Runnable {
             byte[] output = formBitfieldMessage();
 
             System.out.println("sent bitfield");
-            out.write(output);
-            out.flush();
+            synchronized (this) {
+                out.write(output);
+                out.flush();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -49,11 +51,12 @@ public class BitfieldRunnable implements Runnable {
     private byte[] formBitfieldMessage(){
         //Transform bitfield to byte[]
         byte[] pieces = new byte[attributes.getNumOfPieces()];
-        for (int i = 0; i < pieces.length; i++) {
-            if (myBitfield.get(i) == false)
-                pieces[i] = 0;
-            else
-                pieces[i] = 1;
+
+        synchronized (this) {
+            for (int i = 0; i < pieces.length; i++) {
+                if (myBitfield.get(i) == false) pieces[i] = 0;
+                else pieces[i] = 1;
+            }
         }
 
         //Output msg

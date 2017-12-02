@@ -39,20 +39,24 @@ public class HaveHandler {
     }
 
     private void updateNeighborBitfield(String neighborID) {
-        Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
-        BitSet neighborBitfield = neighbor.getBitfield();
-        String s = new String(payload);
-        int piece = Integer.valueOf(s);
-        neighborBitfield.set(piece);
+        synchronized (this) {
+            Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
+            BitSet neighborBitfield = neighbor.getBitfield();
+            String s = new String(payload);
+            int piece = Integer.valueOf(s);
+            neighborBitfield.set(piece);
+        }
     }
 
     public boolean findPiece() {
         String s = new String(payload);
         int piece = Integer.valueOf(s);
-        if (thisPeer.getBitfield().get(piece) == false) {
-            return true;
+        synchronized (this) {
+            if (thisPeer.getBitfield().get(piece) == false) {
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
 }

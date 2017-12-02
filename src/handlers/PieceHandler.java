@@ -48,12 +48,12 @@ public class PieceHandler {
             }
         }
 
-        if (cycleNotOver) {
-            decideWhatToDoWithPieceSender(neighborID, out);
-
-            HashMap<String, Neighbor> neighbors = peer.getMap();
-            sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
-        }
+//        if (cycleNotOver) {
+        decideWhatToDoWithPieceSender(neighborID, out);
+//
+//            HashMap<String, Neighbor> neighbors = peer.getMap();
+//            sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
+//        }
     }
 
     private void updateFile() {
@@ -73,11 +73,12 @@ public class PieceHandler {
             filepiece[i] = payload[i+4];
 
         try {
-            RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + attributes.getFileName(), "rw");
-            raf.seek(offset);
-            raf.write(filepiece);
-            raf.close();
-
+            synchronized (this) {
+                RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + attributes.getFileName(), "rw");
+                raf.seek(offset);
+                raf.write(filepiece);
+                raf.close();
+            }
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -96,8 +97,10 @@ public class PieceHandler {
         String index = new String(pieceIndex);
         int piece = Integer.parseInt(index);
 
-        //set appropriate bit in bitfield
-        thisPeer.getBitfield().set(piece);
+        synchronized (this) {
+            //set appropriate bit in bitfield
+            thisPeer.getBitfield().set(piece);
+        }
     }
 
     private void decideWhatToDoWithPieceSender(String neighborID, BufferedOutputStream out) {
@@ -138,11 +141,13 @@ public class PieceHandler {
     private boolean isInterested (Neighbor n) {
         int numOfPieces = attributes.getNumOfPieces();
 
-        for (int i = 0; i<numOfPieces; i++) {
-            if (thisPeer.getBitfield().get(i) == false && n.getBitfield().get(i) == true) {
-                return true;
+        synchronized (this) {
+            for (int i = 0; i < numOfPieces; i++) {
+                if (thisPeer.getBitfield().get(i) == false && n.getBitfield().get(i) == true) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 }
