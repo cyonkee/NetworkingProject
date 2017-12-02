@@ -1,12 +1,14 @@
 package msgSenders;
 
+import connection.Helper;
 import connection.PeerProcess;
 import setup.Config;
 import setup.Neighbor;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.util.BitSet;
+import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * Created by cyonkee on 12/1/17.
@@ -19,6 +21,7 @@ public class UnchokeRunnable implements Runnable {
     private Config attributes;
     private BitSet myBitfield;
     private String neighborID;
+    private Neighbor thisPeer;
 
     public UnchokeRunnable(String name, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
@@ -26,7 +29,7 @@ public class UnchokeRunnable implements Runnable {
         this.peer = peer;
         this.neighborID = neighborID;
         attributes = peer.getAttributes();
-        Neighbor thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
+        thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
         myBitfield = (BitSet) thisPeer.getBitfield();
     }
 
@@ -39,17 +42,14 @@ public class UnchokeRunnable implements Runnable {
     public void run() {
         try {
             byte[] output = formUnchokeMessage();
-
             Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
             BufferedOutputStream os = neighbor.getOutputStream();
             System.out.println("sent unchoke");
-
             synchronized (this) {
                 os.write(output);
                 os.flush();
             }
-
-        } catch (IOException e) {
+        } catch(IOException e){
             e.printStackTrace();
         }
     }

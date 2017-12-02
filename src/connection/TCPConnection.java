@@ -24,8 +24,8 @@ public class TCPConnection {
 
     public void startServer() {
         Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
-        boolean listening = true;
         int port = thisPeer.getPort();
+        //boolean listening = true;
 
         //SERVER SOCKET
         //keeps listening for new connection.Client connections until the socket is closed
@@ -33,7 +33,7 @@ public class TCPConnection {
         try {
             ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Server " + peer.getPeerID() + " listening on port " + port);
-            while (listening) {
+            while (thisPeer.getIsListening()) {
                 new ServerThread(serverSocket.accept(),peer).start();
             }
         } catch (IOException e) {

@@ -40,8 +40,8 @@ public class RequestRunnable implements Runnable {
     @Override
     public void run() {
         try {
+            peer.incrementDownloads(neighborID);
             byte[] output = formRequestMessage();
-
             System.out.println("sent request");
 
             synchronized (this) {
@@ -77,6 +77,8 @@ public class RequestRunnable implements Runnable {
         //payload (piece being requested)
         for(int i=0; i<4; i++)
             output[i+5] = pieceIndexBytes[i];
+
+        peer.incrementDownloads(neighborID);
 
         return output;
     }
