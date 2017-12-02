@@ -1,3 +1,5 @@
+package setup;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -6,7 +8,7 @@ import java.util.Iterator;
  */
 
 /*
-This class holds the hashmap which will contain the Neighbor objects.
+This class holds the hashmap which will contain the setup.Neighbor objects.
  */
 public class PeersInfo {
     HashMap map = new HashMap();

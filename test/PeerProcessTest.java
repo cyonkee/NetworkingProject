@@ -1,5 +1,9 @@
+import connection.PeerProcess;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import setup.Config;
+import setup.Neighbor;
+import setup.PeersInfo;
 
 import java.io.IOException;
 import java.util.BitSet;

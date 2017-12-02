@@ -1,6 +1,10 @@
-/**
+package connection; /**
  * Created by cyonkee on 9/22/17.
  */
+
+import setup.Config;
+import setup.Neighbor;
+import setup.PeersInfo;
 
 import java.io.*;
 import java.util.*;
@@ -9,16 +13,16 @@ import java.util.*;
 This class is where the program begins by constructing a peer process.
 
 First, the peer is configured by parsing the "Common.cfg" file. The attributes
-of the peer process are contained by an instance of Config (they can be accessed by getters).
+of the peer process are contained by an instance of setup.Config (they can be accessed by getters).
 
 Second, the info for all peer processes is obtained by parsing the "PeerInfo.cfg" file.
-An instance of PeersInfo will create a hash map with the individual peerIDs as the keys.
-The values associated with the keys are instances of the Neighbor class which holds the
+An instance of setup.PeersInfo will create a hash map with the individual peerIDs as the keys.
+The values associated with the keys are instances of the setup.Neighbor class which holds the
 hostname, port, and boolean hasFile for each neighbor peer (also contains current peer).
 
-Third, after the files are parsed then the bitfields for each Neighbor are set by
+Third, after the files are parsed then the bitfields for each setup.Neighbor are set by
 accessing each peer through the hashmap and checking the boolean hasFile. Also, the
-size of the file is attained from the Config attributes object.
+size of the file is attained from the setup.Config attributes object.
  */
 
 public class PeerProcess {
@@ -96,6 +100,13 @@ public class PeerProcess {
         }
     }
 
+    public void incrementDownloads(String neighborID) {
+        if (downloads.get(neighborID) == null)
+            downloads.put(neighborID, 1);
+        else
+            downloads.put(neighborID, downloads.get(neighborID) + 1);
+    }
+
     public String getPeerID(){ return peerID; }
     public Config getAttributes(){ return attributes; }
     public PeersInfo getPeersInfo(){ return peersInfo; }
@@ -105,15 +116,8 @@ public class PeerProcess {
     public PrintWriter getLogWriter() { return logWriter; }
     public HashMap<String, Integer> getDownloads() { return downloads; }
 
-    public void incrementDownloads(String neighborID) {
-        if (downloads.get(neighborID) == null)
-            downloads.put(neighborID, 1);
-        else
-            downloads.put(neighborID, downloads.get(neighborID) + 1);
-    }
-
     public static void main(String[] args) throws IOException {
-        //Start the PeerProcess and parse the files and set bitfields.
+        //Start the connection.PeerProcess and parse the files and set bitfields.
         String currentPeerID = args[0];
         PeerProcess peerProcess = new PeerProcess(currentPeerID);
 
@@ -122,7 +126,7 @@ public class PeerProcess {
         Neighbor currentPeer = (Neighbor) map.get(currentPeerID);
         int countNumber = currentPeer.getPeerCount();
 
-        //Initialize a TCPConnection
+        //Initialize a connection.TCPConnection
         TCPConnection conn = new TCPConnection(peerProcess);
 
         //if first peer in list then just listen

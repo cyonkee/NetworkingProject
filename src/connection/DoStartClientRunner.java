@@ -1,3 +1,7 @@
+package connection;
+
+import setup.Neighbor;
+
 public class DoStartClientRunner implements Runnable{
     TCPConnection conn;
     Neighbor n;

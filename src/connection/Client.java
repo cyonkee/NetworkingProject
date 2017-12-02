@@ -1,3 +1,9 @@
+package connection;
+
+import msgSenders.*;
+import setup.*;
+import handlers.*;
+
 import java.net.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -9,8 +15,6 @@ import java.lang.*;
  */
 public class Client {
     private Socket socket = null;
-    //private ObjectInputStream in;	//stream read from the socket
-    //private ObjectOutputStream out;    //stream write to the socket
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private boolean isClient = true;
@@ -21,10 +25,8 @@ public class Client {
 
     public void startConnection(PeerProcess peer) {
         try{
-            //out = new ObjectOutputStream(socket.getOutputStream());
             out = new BufferedOutputStream(socket.getOutputStream());
             out.flush();
-            //in = new ObjectInputStream(socket.getInputStream());
             in = new BufferedInputStream(socket.getInputStream());
 
             HandshakeProtocol handshake = new HandshakeProtocol(isClient,peer.getPeerID(),in,out);
@@ -34,13 +36,23 @@ public class Client {
 
             HashMap map = peer.getMap();
             Neighbor n = (Neighbor) map.get(neighborID);
-            MessageProtocol m = new MessageProtocol(isClient,peer,neighborID,in,out);
-            n.setConnection(m);
+            n.setSocket(socket);
+            n.setOutputStream(out);
 
+            // connection.MessageProtocol m = new connection.MessageProtocol(isClient,peer,neighborID,in,out);
             //Testing connections
-            System.out.println("Connected as Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //System.out.println("Connected as connection.Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
+            //m.doClientMessage();
 
-            m.doClientMessage();
+            ListenerRunnable listener = new ListenerRunnable("clientlistener", in, out, peer, neighborID);
+            listener.start();
+
+            Neighbor thisPeer = (Neighbor) map.get(peer.getPeerID());
+            BitSet myBitfield = thisPeer.getBitfield();
+            if(myBitfield.cardinality() > 0) {
+                BitfieldRunnable bitfieldSender = new BitfieldRunnable("bitfieldSender", out, peer);
+                bitfieldSender.start();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -48,7 +60,7 @@ public class Client {
             e.printStackTrace();
         }
     }
-    private void writeClientConnLog(PrintWriter logWriter,PeerProcess peer,String neighborID){
+    private void writeClientConnLog(PrintWriter logWriter, PeerProcess peer, String neighborID){
         LocalDateTime now = LocalDateTime.now();
         int year = now.getYear();
         int month = now.getMonthValue();

@@ -1,5 +1,9 @@
+package connection;
+
+import setup.Config;
+import setup.Neighbor;
+
 import java.io.*;
-import java.nio.Buffer;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -10,8 +14,6 @@ public class MessageProtocol {
     private boolean isClient;
     private PeerProcess peer;
     private String neighborID;
-    //private ObjectInputStream in;	//stream read from the socket
-    //private ObjectOutputStream out;    //stream write to the socket
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private PrintWriter logWriter;
@@ -19,12 +21,11 @@ public class MessageProtocol {
     private int lastPieceSize;
     private int numOfPieces;
     private String filename;
-    private HashMap map;
+    private HashMap<String, Neighbor> map;
     private Neighbor n;
     private Config attributes;
     private BitSet bitfield;
 
-    //public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
     public MessageProtocol(boolean isClient, PeerProcess peer, String neighborID, BufferedInputStream in, BufferedOutputStream out) throws IOException, ClassNotFoundException {
         this.isClient = isClient;
         this.peer = peer;
@@ -44,11 +45,8 @@ public class MessageProtocol {
 
     public void doClientMessage() throws IOException, ClassNotFoundException {
         //start messaging by sending bitfield
-        //testing bitfield
-        //if (bitfield.length() != 0)
-        sendMessage(5,null);
-
-        //sendMessage(2,null);
+        if (bitfield.length() != 0)
+            sendMessage(5,null);
         receiveMessage();
     }
 
@@ -64,12 +62,9 @@ public class MessageProtocol {
 
         //read in the message type and the payload
         String mLength = new String(lengthMsg);
-        System.out.println("mLength: " + mLength);
+        //System.out.println("mLength: " + mLength);
         int length = Integer.valueOf(mLength);
         byte[] input = new byte[length];
-
-        //test
-        //System.out.println(mLength);
 
         //store type
         in.read(input, 0, length);
@@ -93,19 +88,20 @@ public class MessageProtocol {
                 break;
             case "1":
                 //received Unchoke, so send request for piece
-                System.out.println("received unchoke");
+                System.out.println("received unchoke from: " + neighborID);
                 sendMessage(6, null);
                 break;
             case "2":
-                System.out.println("received interested");
+                System.out.println("received interested from " + neighborID);
                 writeReceivedInterestedLog("interested");
                 sendMessage(1,null);
                 break;
             case "3":
                 writeReceivedInterestedLog("not interested");
-                System.out.println("received not interested");
+                System.out.println("received not interested from " + neighborID);
                 break;
             case "4":
+                System.out.println("Received have from: " + neighborID);
                 break;
             case "5":
                 //receives bitfield
@@ -115,7 +111,8 @@ public class MessageProtocol {
                 System.out.println();*/
 
                 //received Bitfield, so check if there are interesting pieces and send not/interested
-                System.out.println("received bitfield");
+                //System.out.println("received bitfield");
+                updateNeighborBitfield(payload);
                 boolean interested = findPieces(payload);
                 if (interested) sendMessage(2, null);
                 else sendMessage(3, null);
@@ -123,24 +120,32 @@ public class MessageProtocol {
                 break;
             case "6":
                 //received request, so send piece
-                System.out.println("received request");
+                //System.out.println("received request");
                 sendMessage(7, payload);
                 break;
             case "7":
                 //received piece, so update bitfield and file, send "have" to peers
-                updateBitfield(payload);
                 updateFile(payload);
+                updateBitfield(payload);
+                sendMessage(4,payload);
                 if (bitfield.cardinality() != numOfPieces) {
-                    sendMessage(6, payload);
+                    //sendMessage(6, null);
                 } else {
                     System.out.println("HAS FULL FILE");
                 }
 
                 break;
         }
+        receiveMessage();
     }
 
-    public void sendMessage(int type, byte[] payload) throws IOException, ClassNotFoundException {
+    public void sendMessage(int type, byte[] payload) {
+        SendMessageRunner runner = new SendMessageRunner(type, payload, this);
+        Thread sendMessageThread = new Thread(runner);
+        sendMessageThread.start();
+    }
+
+    public void sendMessageImpl(int type, byte[] payload) throws IOException, ClassNotFoundException {
         //handle sending messages
         switch (type) {
             case 0:
@@ -156,20 +161,20 @@ public class MessageProtocol {
                 sendInterested(false);
                 break;
             case 4:
+                sendHaves(payload);
                 break;
             case 5:
                 sendBitfield();
                 break;
             case 6:
                 sendRequest();
-                System.out.println("sent request");
+                // System.out.println("sent request");
                 break;
             case 7:
                 sendPiece(payload);
-                System.out.println("sent piece");
+                //System.out.println("sent piece");
                 break;
         }
-        receiveMessage();
     }
 
     public void sendChoke(boolean choke) throws IOException {
@@ -182,11 +187,11 @@ public class MessageProtocol {
         String type;
         if (choke) {
             type = "0";
-            System.out.println("sent choke");
+            System.out.println("sent choke to: " + neighborID);
         }
         else {
             type = "1";
-            System.out.println("sent unchoke");
+            System.out.println("sent unchoke to " + neighborID);
         }
         byte[] typeBytes = type.getBytes();
         output[4] = typeBytes[0];
@@ -199,21 +204,21 @@ public class MessageProtocol {
         byte[] output = new byte[5];
         String lengthMsg = "0001";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
-        System.out.print("lengthMsgBytes: ");
+        //System.out.print("lengthMsgBytes: ");
         for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
-            System.out.print(lengthMsgBytes[i]);
+            //System.out.print(lengthMsgBytes[i]);
         }
-        System.out.println("");
+        //System.out.println("");
 
         String type;
         if (interested) {
             type = "2";
-            System.out.println("sent interested");
+            System.out.println("sent interested to neighbor: " + neighborID);
         }
         else {
             type = "3";
-            System.out.println("sent not interested");
+            System.out.println("sent not interested to neighbor: " + neighborID);
         }
         byte[] typeBytes = type.getBytes();
         output[4] = typeBytes[0];
@@ -222,7 +227,43 @@ public class MessageProtocol {
         out.flush();
     }
 
+    public void sendHaves(byte[] payload) throws IOException{
+        byte[] output = new byte[9];
+        String lengthMsg = "0005";
+        String type = "4";
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        byte[] typeBytes = type.getBytes();
+        byte[] pieceIndexBytes = new byte[4];
+        for(int i=0; i<4; i++)
+            pieceIndexBytes[i] = payload[i];
+
+        //msg length
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        //msg type
+        output[4] = typeBytes[0];
+
+        //payload (piece that was received)
+        for(int i=0; i<4; i++)
+            output[i+5] = pieceIndexBytes[i];
+
+        for (Map.Entry<String, Neighbor> entry : map.entrySet()) {
+            String id = entry.getKey();
+            //setup.Neighbor neighbor = entry.getValue();
+            Neighbor neighbor = map.get(id);
+            if (id.equals("1002")) {
+                BufferedOutputStream bOS = neighbor.getOutputStream();
+                bOS.write(output);
+                bOS.flush();
+            }
+        }
+    }
+
     public boolean findPieces(byte[] payload) {
+        if (payload.length == 0) {
+            payload = Arrays.copyOf(n.getBitfield().toByteArray(), numOfPieces);
+        }
         for (int i = 0; i<numOfPieces; i++) {
             if (payload[i] == 1 && bitfield.get(i) == false) {
                 return true;
@@ -231,10 +272,18 @@ public class MessageProtocol {
         return false;
     }
 
+    public boolean findPiece(byte [] pieceIndex) {
+        String s = new String(pieceIndex);
+        int piece = Integer.valueOf(s);
+        if (bitfield.get(piece) == false) {
+            return true;
+        }
+        return false;
+    }
+
     public void sendBitfield() throws IOException {
         //Transform bitfield to byte[]
         byte[] pieces = new byte[numOfPieces];
-        //System.out.println("Number of pieces: "+numOfPieces);
         for(int i=0; i<pieces.length; i++){
             if(bitfield.get(i) == false)
                 pieces[i] = 0;
@@ -261,7 +310,6 @@ public class MessageProtocol {
         //msg payload = bitfield
         for(int i=0; i<pieces.length; i++) {
             output[i+5] = pieces[i];
-            //System.out.print(output[i+5]+" ");
         }
 
         System.out.println("sent bitfield");
@@ -273,8 +321,9 @@ public class MessageProtocol {
         //get pieceIndex and size of piece
         String piece = new String(payload);
         int pieceIndex = Integer.parseInt(piece);
-        System.out.println("pieceIndex: "+ pieceIndex);
+        //System.out.println("pieceIndex: "+ pieceIndex);
         int offset = pieceIndex * pieceSize;
+        //System.out.println("offset: " + offset);
         int thisPieceSize;
         if(pieceIndex == numOfPieces - 1)
             thisPieceSize = lastPieceSize;
@@ -293,18 +342,18 @@ public class MessageProtocol {
         byte[] output = new byte[1 + 4 + 4 + thisPieceSize];
         String lengthMsg = Integer.toString(1 + 4 + thisPieceSize);
         lengthMsg = padLeft(lengthMsg,4);
-        System.out.println("lengthMsg: " + lengthMsg);
+        //System.out.println("lengthMsg: " + lengthMsg);
         String type = "7";
         byte[] lengthMsgBytes = lengthMsg.getBytes();
         byte[] typeBytes = type.getBytes();
 
         //msg length
-        System.out.print("msg length: ");
+        //System.out.print("msg length: ");
         for(int i=0; i<4; i++) {
             output[i] = lengthMsgBytes[i];
-            System.out.print(lengthMsgBytes[i] + " ");
+            //System.out.print(lengthMsgBytes[i] + " ");
         }
-        System.out.println("");
+        //System.out.println("");
 
         //msg type
         output[4] = typeBytes[0];
@@ -320,11 +369,14 @@ public class MessageProtocol {
         out.flush();
 
         peer.incrementDownloads(neighborID);
-        System.out.println("Number of downloads for peer " + neighborID + ": " + peer.getDownloads().get(neighborID));
+        //System.out.println("Number of downloads for peer " + neighborID + ": " + peer.getDownloads().get(neighborID));
     }
 
     public void sendRequest() throws IOException {
         int randomIndex = chooseRandomMissingPiece();
+        if (randomIndex == -1) {
+            return;
+        }
         byte[] output = new byte[9];
         String lengthMsg = "0005";
         String type = "6";
@@ -360,6 +412,18 @@ public class MessageProtocol {
 
         //set appropriate bit in bitfield
         bitfield.set(piece);
+    }
+
+    private void updateNeighborBitfield(byte[] payload) {
+        BitSet bitfield = new BitSet(numOfPieces);
+        for(int i=0; i<numOfPieces; i++) {
+            if (payload[i] == 1)
+                bitfield.set(i);
+        }
+        Neighbor neighbor = map.get(neighborID);
+        neighbor.setBitfield(bitfield);
+        //System.out.println("neighborID: " + neighborID);
+        //map.put(neighborID, neighbor);
     }
 
     private void updateFile(byte[] payload) throws IOException {
@@ -401,6 +465,20 @@ public class MessageProtocol {
         logWriter.flush();
     }
 
+    private void writeReceivedHaveLog(int pieceIndex) {
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        int second = now.getSecond();
+        String output = month + "/" + day + "/" + year + " " + hour + ":" + minute + ":" + second + ": ";
+        output += "Peer " + peer.getPeerID() + " received the ‘have’ message from " + neighborID + " for the piece " + pieceIndex + ".";
+        logWriter.println(output);
+        logWriter.flush();
+    }
+
     private void writeDownloadPieceLog(int pieceIndex){
         LocalDateTime now = LocalDateTime.now();
         int year = now.getYear();
@@ -435,25 +513,32 @@ public class MessageProtocol {
 
         //Fill list with missing pieces indices
         ArrayList<Integer> indicesOfMissingPieces = new ArrayList<Integer>();
+        boolean indexAdded = false;
         if(bitFieldLength == 0){
-            for(int i=0; i<numOfPieces; i++)
+            for(int i=0; i<numOfPieces; i++) {
                 indicesOfMissingPieces.add(i);
+                indexAdded = true;
+            }
         }
         else{
             for(int i=0; i<numOfPieces; i++){
-                if(!bitfield.get(i)) {
+                if(!bitfield.get(i) && map.get(neighborID).getBitfield().get(i)) {
                     indicesOfMissingPieces.add(i);
-                    System.out.print(i + " ");
+                    indexAdded = true;
                 }
             }
         }
 
-        //Randomly select index from missing
-        Random random = new Random();
-        int randomIndex = random.nextInt(indicesOfMissingPieces.size());
-        System.out.println("Random Index: " + randomIndex);
-        System.out.println("indicesOfMissingPieces.size(): " + indicesOfMissingPieces.size());
-        return indicesOfMissingPieces.get(randomIndex);
+        if (!indexAdded) {
+            return -1;
+        } else {
+            //Randomly select index from missing
+            //System.out.println("indicesOfMissingPieces.size(): " + indicesOfMissingPieces.size() + "neighborID: " + neighborID);
+            Random random = new Random();
+            int randomIndex = random.nextInt(indicesOfMissingPieces.size());
+            //System.out.println("Random Index: " + randomIndex);
+            return indicesOfMissingPieces.get(randomIndex);
+        }
     }
 
     public String padLeft(String s, int length) {
