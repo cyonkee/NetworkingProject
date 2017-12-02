@@ -3,6 +3,8 @@ package handlers;
 import connection.Helper;
 import connection.PeerProcess;
 import setup.Config;
+import setup.*;
+import msgSenders.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -22,7 +24,7 @@ public class ListenerRunnable implements Runnable {
     private PeerProcess peer;
     private Config attributes;
     private String neighborID;
-    static public boolean isChokeTime = false;
+    private HashMap map;
 
     public ListenerRunnable(String name, BufferedInputStream in, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
@@ -31,6 +33,7 @@ public class ListenerRunnable implements Runnable {
         this.peer = peer;
         this.neighborID = neighborID;
         attributes = peer.getAttributes();
+        map = peer.getMap();
     }
 
     public void start() {
@@ -72,7 +75,34 @@ public class ListenerRunnable implements Runnable {
                     handleMessage(mType, payload);
                 }
 
+                exitIfAllFilesFull();
+
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void exitIfAllFilesFull() {
+        int completedFiles = 0;
+        Neighbor neighbor;
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            neighbor = (Neighbor) pair.getValue();
+            if(neighbor.getBitfield().cardinality() == attributes.getNumOfPieces())
+                completedFiles++;
+        }
+        if(completedFiles == map.size()){
+            //exit
+            Neighbor thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
+            try {
+                thisPeer.getSocket().close();
+                synchronized (this) {
+                    thisPeer.setIsListening(false);
+                }
+                System.exit(0);
+            } catch (IOException e){
                 e.printStackTrace();
             }
         }
@@ -164,30 +194,20 @@ public class ListenerRunnable implements Runnable {
     }
 
     private void chokeOrUnchokePeers() {
-//        HashMap map = peer.getMap();
-//        Neighbor neighbor;
-//        Iterator it = map.entrySet().iterator();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry)it.next();
-//            neighbor = (Neighbor) pair.getValue();
-//
-//            if(neighbor.getSocket() != null) {
-//                //if neighbor peer is interested send unchoke
-//                if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsInterested()) {
-//                    UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, (String) pair.getKey());
-//                    unchokeSender.start();
-//                }
-//                //if neighbor peer is not interested send choke
-//                if ((!pair.getKey().equals(peer.getPeerID())) && !neighbor.getIsInterested()) {
-//                    ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
-//                    chokeSender.start();
-//                }
-//            }
-//        }
         PreferredPeers preferredPeers = new PreferredPeers(out,peer,neighborID);
         preferredPeers.handle();
-        startChokeTimer();
 
+        int completedFiles = 0;
+        Neighbor neighbor;
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            neighbor = (Neighbor) pair.getValue();
+            if(neighbor.getBitfield().cardinality() == attributes.getNumOfPieces())
+                completedFiles++;
+        }
+        if(completedFiles != map.size())
+            startChokeTimer();
     }
 
     private void optimisticallyUnchokeNeighbor() {
@@ -215,17 +235,29 @@ public class ListenerRunnable implements Runnable {
             }
         }
 
-        Random random = new Random();
-        int chosenOneIndex = random.nextInt(potentialOptimisticallyUnchoked.size());
-        String chosenOneID = potentialOptimisticallyUnchoked.get(chosenOneIndex);
+        if (potentialOptimisticallyUnchoked.size() != 0) {
+            Random random = new Random();
+            int chosenOneIndex = random.nextInt(potentialOptimisticallyUnchoked.size());
+            String chosenOneID = potentialOptimisticallyUnchoked.get(chosenOneIndex);
 
-        Neighbor chosenOne = (Neighbor)map.get(chosenOneID);
-        chosenOne.setIsOptimisticallyUnchoked(true);
-        UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, chosenOneID);
-        unchokeSender.start();
-        writeChangedOptimisticallyUnchokedLog(peer.getLogWriter(), peer, chosenOneID);
+            Neighbor chosenOne = (Neighbor)map.get(chosenOneID);
+            chosenOne.setIsOptimisticallyUnchoked(true);
+            UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, chosenOneID);
+            unchokeSender.start();
+            writeChangedOptimisticallyUnchokedLog(peer.getLogWriter(), peer, chosenOneID);
+        }
 
-        startOptimisticallyUnchokeTimer();
+        int completedFiles = 0;
+        Neighbor n;
+        Iterator it2 = map.entrySet().iterator();
+        while (it2.hasNext()) {
+            Map.Entry pair = (Map.Entry) it2.next();
+            n = (Neighbor) pair.getValue();
+            if(n.getBitfield().cardinality() == attributes.getNumOfPieces())
+                completedFiles++;
+        }
+        if(completedFiles != map.size())
+            startOptimisticallyUnchokeTimer();
     }
 
     private void writeChangedOptimisticallyUnchokedLog(PrintWriter logWriter, PeerProcess peer, String neighborID){

@@ -59,8 +59,6 @@ public class ServerThread extends Thread {
                 bitfieldSender.start();
             }
 
-
-            //socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
