@@ -39,7 +39,8 @@ public class PeerProcess {
         configurePeer();
         parsePeersFile();
         setBitfields();
-        this.downloads = new HashMap<String, Integer>();
+        this.downloads = new HashMap<>();
+        initializeMap();
     }
 
     private void configurePeer(){
@@ -97,6 +98,15 @@ public class PeerProcess {
                 bitfield.set(0, numOfPieces+1, true);
             }
             n.setBitfield(bitfield);
+        }
+    }
+
+    private void initializeMap() {
+        int i=0;
+        Iterator it = neighborIDs.iterator();
+        for(;it.hasNext();it.next()) {
+            downloads.put((String) neighborIDs.get(i), 0);
+            i++;
         }
     }
 
