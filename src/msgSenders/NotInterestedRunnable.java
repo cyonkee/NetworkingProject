@@ -38,8 +38,10 @@ public class NotInterestedRunnable implements Runnable {
         try {
             byte[] output = formNotInterestedMessage();
 
-            out.write(output);
-            out.flush();
+            synchronized (this) {
+                out.write(output);
+                out.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

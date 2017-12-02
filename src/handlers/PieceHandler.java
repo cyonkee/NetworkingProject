@@ -2,6 +2,8 @@ package handlers;
 
 import connection.PeerProcess;
 import msgSenders.HaveRunnable;
+import msgSenders.NotInterestedRunnable;
+import msgSenders.RequestRunnable;
 import setup.Config;
 import setup.Neighbor;
 
@@ -45,6 +47,11 @@ public class PieceHandler {
                 haveSender.start();
             }
         }
+
+        decideWhatToDoWithPieceSender(neighborID, out);
+
+//            HashMap<String, Neighbor> neighbors = peer.getMap();
+//            sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
     }
 
     private void updateFile() {
@@ -64,11 +71,12 @@ public class PieceHandler {
             filepiece[i] = payload[i+4];
 
         try {
-            RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + attributes.getFileName(), "rw");
-            raf.seek(offset);
-            raf.write(filepiece);
-            raf.close();
-
+            synchronized (this) {
+                RandomAccessFile raf = new RandomAccessFile("peer_" + peer.getPeerID() + "/" + attributes.getFileName(), "rw");
+                raf.seek(offset);
+                raf.write(filepiece);
+                raf.close();
+            }
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -87,7 +95,57 @@ public class PieceHandler {
         String index = new String(pieceIndex);
         int piece = Integer.parseInt(index);
 
-        //set appropriate bit in bitfield
-        thisPeer.getBitfield().set(piece);
+        synchronized (this) {
+            //set appropriate bit in bitfield
+            thisPeer.getBitfield().set(piece);
+        }
+    }
+
+    private void decideWhatToDoWithPieceSender(String neighborID, BufferedOutputStream out) {
+        Neighbor n = (Neighbor) peer.getMap().get(neighborID);
+        // if interested request another piece, if not send not interested
+        if (isInterested((n))) {
+            RequestRunnable requestSender = new RequestRunnable("requestSender", out, peer, neighborID);
+            requestSender.start();
+        } else {
+            NotInterestedRunnable notInterestedSender = new NotInterestedRunnable("not interested", out, peer);
+            notInterestedSender.start();
+            // if peer has the whole file, send not interested to all neighbors
+        }
+    }
+
+    private void sendNotInterestedToAppropriateNeighbors(HashMap<String, Neighbor> neighbors, String neighborID) {
+        boolean hasFullFile = thisPeer.getBitfield().cardinality() == peer.getAttributes().getNumOfPieces();
+        // loop through neighbors to see if you need to send not interested
+        for (Map.Entry<String, Neighbor> entry : neighbors.entrySet()) {
+            String nID = entry.getKey();
+            Neighbor thisNeighbor = entry.getValue();
+            if (nID != neighborID && nID != peer.getPeerID()) {
+                // if you have the full file send not interested to all other neighbors
+                if (hasFullFile) {
+                    NotInterestedRunnable notInterestedSender = new NotInterestedRunnable("not interested", thisNeighbor.getOutputStream(), peer);
+                    notInterestedSender.start();
+                } else {
+                    // check if you are no longer interested in neighbor, if not send not interested
+                    if (!isInterested(thisNeighbor)) {
+                        NotInterestedRunnable notInterestedSender = new NotInterestedRunnable("not interested", thisNeighbor.getOutputStream(), peer);
+                        notInterestedSender.start();
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isInterested (Neighbor n) {
+        int numOfPieces = attributes.getNumOfPieces();
+
+        synchronized (this) {
+            for (int i = 0; i < numOfPieces; i++) {
+                if (thisPeer.getBitfield().get(i) == false && n.getBitfield().get(i) == true) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

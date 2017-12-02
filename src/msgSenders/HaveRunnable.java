@@ -45,8 +45,10 @@ public class HaveRunnable implements Runnable {
             Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
             BufferedOutputStream os = neighbor.getOutputStream();
             System.out.println("sent have");
-            os.write(output);
-            os.flush();
+            synchronized (this) {
+                os.write(output);
+                os.flush();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

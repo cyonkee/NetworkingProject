@@ -38,23 +38,54 @@ public class UnchokeRunnable implements Runnable {
 
     @Override
     public void run() {
-        try {
             byte[] output = formUnchokeMessage();
 
             List<Integer> list = new ArrayList<>();
             ArrayList ids = peer.getNeighborIDs();
             HashMap map = peer.getMap();
-            for(int i = 0; i<ids.size(); i++){
-                Neighbor n = (Neighbor) map.get(ids.get(i));
-                if (n.getSocket() != null && n.getIsInterested()) {
-                    list.add(Integer.valueOf((String) ids.get(i)));
-                }
-            }
+
+            findingInterestedPeers(list, ids, map);
+
+            //test
             for(int i = 0; i<list.size(); i++){
                 System.out.println(list.get(i));
                 System.out.println("Size: "+ list.size());
             }
 
+            sendUnchokeMessages(list, map, output);
+
+            /*Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
+            BufferedOutputStream os = neighbor.getOutputStream();
+            System.out.println("sent unchoke");
+            os.write(output);
+            os.flush();*/
+    }
+
+    private byte[] formUnchokeMessage() {
+        byte[] output = new byte[5];
+        String lengthMsg = "0001";
+        byte[] lengthMsgBytes = lengthMsg.getBytes();
+        for(int i=0; i<4; i++)
+            output[i] = lengthMsgBytes[i];
+
+        String type = "1";
+        byte[] typeBytes = type.getBytes();
+        output[4] = typeBytes[0];
+
+        return output;
+    }
+
+    private void findingInterestedPeers(List list, ArrayList ids, HashMap map){
+        for(int i = 0; i<ids.size(); i++){
+            Neighbor n = (Neighbor) map.get(ids.get(i));
+            if (n.getSocket() != null && n.getIsInterested()) {
+                list.add(Integer.valueOf((String) ids.get(i)));
+            }
+        }
+    }
+
+    private void sendUnchokeMessages(List list, HashMap map, byte[] output){
+        try {
             if (list.size() <= peer.getAttributes().getNumOfPreferredNeighbors()) {
                 for (int i = 0; i<list.size(); i++) {
                     Neighbor neighbor = (Neighbor) map.get(String.valueOf(list.get(i)));
@@ -80,30 +111,8 @@ public class UnchokeRunnable implements Runnable {
                     os.flush();
                 }
             }
-
-
-            /*Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
-            BufferedOutputStream os = neighbor.getOutputStream();
-            System.out.println("sent unchoke");
-            os.write(output);
-            os.flush();*/
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private byte[] formUnchokeMessage() {
-        byte[] output = new byte[5];
-        String lengthMsg = "0001";
-        byte[] lengthMsgBytes = lengthMsg.getBytes();
-        for(int i=0; i<4; i++)
-            output[i] = lengthMsgBytes[i];
-
-        String type = "1";
-        byte[] typeBytes = type.getBytes();
-        output[4] = typeBytes[0];
-
-        return output;
     }
 }

@@ -1,15 +1,14 @@
 package handlers;
 
 import connection.PeerProcess;
-import setup.*;
-import msgSenders.*;
+import msgSenders.ChokeRunnable;
+import msgSenders.UnchokeRunnable;
+import setup.Config;
+import setup.Neighbor;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.*;
 
 /**
@@ -24,6 +23,7 @@ public class ListenerRunnable implements Runnable {
     private PeerProcess peer;
     private Config attributes;
     private String neighborID;
+    static public boolean isChokeTime = false;
 
     public ListenerRunnable(String name, BufferedInputStream in, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
@@ -42,6 +42,10 @@ public class ListenerRunnable implements Runnable {
     @Override
     public void run() {
         startChokeTimer();
+        listenForMessages();
+    }
+
+    private synchronized void listenForMessages(){
         while(true){
             try {
                 if(in.available() != 0) {

@@ -43,8 +43,11 @@ public class RequestRunnable implements Runnable {
             byte[] output = formRequestMessage();
 
             System.out.println("sent request");
-            out.write(output);
-            out.flush();
+
+            synchronized (this) {
+                out.write(output);
+                out.flush();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
