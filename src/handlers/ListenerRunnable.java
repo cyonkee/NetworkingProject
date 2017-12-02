@@ -106,7 +106,7 @@ public class ListenerRunnable implements Runnable {
                 //received have, send interested or not
                 System.out.println("received have");
                 HaveHandler haveHandler = new HaveHandler(payload, peer);
-                haveHandler.handle();
+                haveHandler.handle(neighborID,out);
                 break;
 
             case "5":
@@ -140,6 +140,7 @@ public class ListenerRunnable implements Runnable {
                 chokeOrUnchokePeers();
             }
         };
+
 
         Timer timer = new Timer("chokeTimer");
         timer.schedule(task, attributes.getUnchokingInterval() * 1000);

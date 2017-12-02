@@ -22,7 +22,6 @@ public class UnchokeHandler {
     }
 
     public void handle(String neighborID, BufferedOutputStream out){
-        //Neighbor neighbor = (Neighbor) peer.getMap().get(neighborID);
         RequestRunnable requestSender = new RequestRunnable("requestSender", out, peer, neighborID);
         requestSender.start();
     }
