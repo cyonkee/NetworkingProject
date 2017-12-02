@@ -4,11 +4,9 @@ import connection.Helper;
 import connection.PeerProcess;
 import setup.Config;
 import setup.Neighbor;
-import msgSenders.*;
 
 import java.io.BufferedOutputStream;
 import java.io.PrintWriter;
-import java.time.LocalDateTime;
 
 /**
  * Created by cyonkee on 12/1/17.
@@ -26,6 +24,7 @@ public class ChokeHandler {
 
     public void handle(String neighborID, BufferedOutputStream out){
         writeReceivedChokeLog(peer.getLogWriter(), peer, neighborID);
+        thisPeer.setIsChoked(true);
     }
 
     private void writeReceivedChokeLog(PrintWriter logWriter, PeerProcess peer, String neighborID){

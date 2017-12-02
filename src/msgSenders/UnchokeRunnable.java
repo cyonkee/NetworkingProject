@@ -1,11 +1,13 @@
 package msgSenders;
 
+import connection.Helper;
 import connection.PeerProcess;
 import setup.Config;
 import setup.Neighbor;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -19,6 +21,7 @@ public class UnchokeRunnable implements Runnable {
     private Config attributes;
     private BitSet myBitfield;
     private String neighborID;
+    private Neighbor thisPeer;
 
     public UnchokeRunnable(String name, BufferedOutputStream out, PeerProcess peer, String neighborID){
         this.name = name;
@@ -26,7 +29,7 @@ public class UnchokeRunnable implements Runnable {
         this.peer = peer;
         this.neighborID = neighborID;
         attributes = peer.getAttributes();
-        Neighbor thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
+        thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
         myBitfield = (BitSet) thisPeer.getBitfield();
     }
 
@@ -51,8 +54,26 @@ public class UnchokeRunnable implements Runnable {
             System.out.println("Size: " + list.size());
         }
         List chosenPeers = determineUnchokePeers(list, map, output);
+        thisPeer.setChosenPeers(chosenPeers);
+        writeChangePreferredLog(peer.getLogWriter(), peer, neighborID, chosenPeers);
         sendChokeMessages(chosenPeers,list);
 
+    }
+
+    private void writeChangePreferredLog(PrintWriter logWriter, PeerProcess peer, String neighborID, List chosenPeers) {
+        String output;
+        Helper helper = new Helper();
+        output = helper.getCurrentTime();
+        output += "Peer "+peer.getPeerID()+" has the preferred neighbors ";
+        for(int i=0; i < chosenPeers.size(); i++){
+            output += chosenPeers.get(i);
+            if(i != chosenPeers.size() - 1)
+                output += ", ";
+            else
+                output += ".";
+        }
+        logWriter.println(output);
+        logWriter.flush();
     }
 
     private byte[] formUnchokeMessage() {

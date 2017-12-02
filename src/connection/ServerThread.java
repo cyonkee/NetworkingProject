@@ -1,12 +1,16 @@
 package connection; /**
  * Created by cyonkee on 10/22/17.
  */
-import msgSenders.*;
-import setup.*;
-import handlers.*;
-import java.io.*;
+import handlers.HandshakeProtocol;
+import handlers.ListenerRunnable;
+import msgSenders.BitfieldRunnable;
+import setup.Neighbor;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.time.LocalDateTime;
 import java.util.BitSet;
 import java.util.HashMap;
 
@@ -44,11 +48,6 @@ public class ServerThread extends Thread {
             Neighbor n = (Neighbor) map.get(neighborID);
             n.setSocket(socket);
             n.setOutputStream(out);
-
-            //connection.MessageProtocol m = new connection.MessageProtocol(isClient,peer,neighborID,in,out);
-            //Testing connections
-            //System.out.println("Connected as connection.Client: " + m.getIsClient() + " With neighbor: " + m.getNeighborID());
-            //m.doServerMessage();
 
             ListenerRunnable listener = new ListenerRunnable("serverlistener", in, out, peer, neighborID);
             listener.start();
