@@ -36,9 +36,8 @@ public class NotInterestedRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            byte[] output = formNotInterestedMessage();
-
             synchronized (this) {
+                byte[] output = formNotInterestedMessage();
                 out.write(output);
                 out.flush();
             }

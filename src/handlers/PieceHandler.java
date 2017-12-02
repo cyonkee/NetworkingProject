@@ -50,8 +50,8 @@ public class PieceHandler {
 
         decideWhatToDoWithPieceSender(neighborID, out);
 
-//            HashMap<String, Neighbor> neighbors = peer.getMap();
-//            sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
+        HashMap<String, Neighbor> neighbors = peer.getMap();
+        sendNotInterestedToAppropriateNeighbors(neighbors, neighborID);
     }
 
     private void updateFile() {
@@ -110,17 +110,19 @@ public class PieceHandler {
         } else {
             NotInterestedRunnable notInterestedSender = new NotInterestedRunnable("not interested", out, peer);
             notInterestedSender.start();
-            // if peer has the whole file, send not interested to all neighbors
         }
     }
 
     private void sendNotInterestedToAppropriateNeighbors(HashMap<String, Neighbor> neighbors, String neighborID) {
+        // if peer has the whole file, send not interested to all neighbors
         boolean hasFullFile = thisPeer.getBitfield().cardinality() == peer.getAttributes().getNumOfPieces();
+
         // loop through neighbors to see if you need to send not interested
         for (Map.Entry<String, Neighbor> entry : neighbors.entrySet()) {
             String nID = entry.getKey();
             Neighbor thisNeighbor = entry.getValue();
-            if (nID != neighborID && nID != peer.getPeerID()) {
+
+            if ((thisNeighbor.getSocket() != null) && (nID != neighborID) && (nID != peer.getPeerID())) {
                 // if you have the full file send not interested to all other neighbors
                 if (hasFullFile) {
                     NotInterestedRunnable notInterestedSender = new NotInterestedRunnable("not interested", thisNeighbor.getOutputStream(), peer);
