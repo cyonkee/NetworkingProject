@@ -16,13 +16,13 @@ public class BitfieldHandler {
     private byte[] payload;
     private PeerProcess peer;
     private Config attributes;
-    private Neighbor n;
+    private Neighbor thisPeer;
 
     public BitfieldHandler(byte[] payload, PeerProcess peer){
         this.payload = payload;
         this.peer = peer;
         attributes = peer.getAttributes();
-        n = (Neighbor) peer.getMap().get(peer.getPeerID());
+        thisPeer = (Neighbor) peer.getMap().get(peer.getPeerID());
     }
 
     public void handle(String neighborID, BufferedOutputStream out){
@@ -52,10 +52,10 @@ public class BitfieldHandler {
     private boolean findPieces(byte[] payload) {
         int numOfPieces = attributes.getNumOfPieces();
         if (payload.length == 0) {
-            payload = Arrays.copyOf(n.getBitfield().toByteArray(), numOfPieces);
+            payload = Arrays.copyOf(thisPeer.getBitfield().toByteArray(), numOfPieces);
         }
         for (int i = 0; i<numOfPieces; i++) {
-            if (payload[i] == 1 && n.getBitfield().get(i) == false) {
+            if (payload[i] == 1 && thisPeer.getBitfield().get(i) == false) {
                 return true;
             }
         }
