@@ -42,6 +42,7 @@ public class ListenerRunnable implements Runnable {
     @Override
     public void run() {
         startChokeTimer();
+        startOptimisticallyUnchokeTimer();
         listenForMessages();
     }
 
@@ -151,6 +152,18 @@ public class ListenerRunnable implements Runnable {
         timer.schedule(task, attributes.getUnchokingInterval() * 1000);
     }
 
+    private void startOptimisticallyUnchokeTimer() {
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                optimisticallyUnchokeNeighbor();
+            }
+        };
+
+        Timer timer = new Timer("optimistacalUnchokeTimer");
+        timer.schedule(task, attributes.getOptimisticUnchokingInterval() * 1000);
+    }
+
     private void chokeOrUnchokePeers() {
         HashMap map = peer.getMap();
         Neighbor neighbor;
@@ -173,6 +186,40 @@ public class ListenerRunnable implements Runnable {
             }
         }
         startChokeTimer();
+    }
+
+    private void optimisticallyUnchokeNeighbor() {
+        HashMap map = peer.getMap();
+        Neighbor neighbor;
+        ArrayList<String> potentialOptimisticallyUnchoked = new ArrayList<String>();
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            neighbor = (Neighbor) pair.getValue();
+
+            if (neighbor.getSocket() != null) {
+                if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsInterested() && neighbor.getIsChoked()) {
+                    potentialOptimisticallyUnchoked.add((String) pair.getKey());
+                } else if ((!pair.getKey().equals(peer.getPeerID())) && neighbor.getIsOptimisticallyUnchoked()) {
+                    neighbor.setIsOptimisticallyUnchoked(false);
+//                    if (!neighborIsPreferredNeighbor()) {
+//                        ChokeRunnable chokeSender = new ChokeRunnable("chokeSender", out, peer, (String) pair.getKey());
+//                        chokeSender.start();
+//                    } 
+                }
+            }
+        }
+
+        Random random = new Random();
+        int chosenOneIndex = random.nextInt(potentialOptimisticallyUnchoked.size());
+        String chosenOneID = potentialOptimisticallyUnchoked.get(chosenOneIndex);
+
+        Neighbor chosenOne = (Neighbor)map.get(chosenOneID);
+        chosenOne.setIsOptimisticallyUnchoked(true);
+        UnchokeRunnable unchokeSender = new UnchokeRunnable("unchokeSender", out, peer, chosenOneID);
+        unchokeSender.start();
+
+        startOptimisticallyUnchokeTimer();
     }
 
 }

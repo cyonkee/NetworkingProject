@@ -20,6 +20,7 @@ public class Neighbor {
     private BufferedOutputStream out;
     private boolean isInterested = false;
     private boolean isChoked = true;
+    private boolean isOptimisticallyUnchoked = false;
 
     public Neighbor(String hostname, String port, String hasFile, int peerCount){
         this.hostname = hostname;
@@ -32,6 +33,7 @@ public class Neighbor {
     public void setOutputStream(BufferedOutputStream out){ this.out = out; }
     public void setIsInterested(boolean isInterested){ this.isInterested = isInterested; }
     public void setIsChoked(boolean isChoked){ this.isChoked = isChoked; }
+    public void setIsOptimisticallyUnchoked(boolean isOptimisticallyUnchoked) { this.isOptimisticallyUnchoked = isOptimisticallyUnchoked; }
     public void setBitfield(BitSet bitfield) {
         this.bitfield = bitfield;
     }
@@ -50,4 +52,5 @@ public class Neighbor {
     public BufferedOutputStream getOutputStream(){ return out; }
     public boolean getIsInterested(){ return isInterested; }
     public boolean getIsChoked(){ return isChoked; }
+    public boolean getIsOptimisticallyUnchoked() { return isOptimisticallyUnchoked; }
 }
